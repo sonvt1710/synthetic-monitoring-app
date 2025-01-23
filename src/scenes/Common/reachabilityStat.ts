@@ -1,43 +1,64 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
-import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { SpecialValueMatch } from '@grafana/data';
+import { SceneQueryRunner } from '@grafana/scenes';
+import { DataSourceRef, MappingType, ThresholdsMode } from '@grafana/schema';
 
-function getQueryRunner(metrics: DataSourceRef) {
-  return new SceneQueryRunner({
+import { REACHABILITY_DESCRIPTION } from 'components/constants';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
+
+import { divideSumByCountTransformation } from './divideSumByCountTransformation';
+
+function getQueryRunner(metrics: DataSourceRef, minStep: string) {
+  const queries = [
+    {
+      expr: 'sum(rate(probe_all_success_sum{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval]))',
+      hide: false,
+      instant: false,
+      legendFormat: 'sum',
+      interval: minStep,
+      range: true,
+      refId: 'A',
+    },
+    {
+      exemplar: true,
+      expr: 'sum(rate(probe_all_success_count{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval]))',
+      hide: false,
+      instant: false,
+      interval: minStep,
+      legendFormat: 'count',
+      range: true,
+      refId: 'B',
+    },
+  ];
+  const runner = new SceneQueryRunner({
     datasource: metrics,
-    queries: [
-      {
-        exemplar: true,
-        expr: 'sum(\n  increase(probe_all_success_sum{instance="$instance", job="$job", probe=~"$probe"}[$__range])\n   )\n/\nsum(\n  increase(probe_all_success_count{instance="$instance", job="$job", probe=~"$probe"}[$__range])\n)',
-        hide: false,
-        instant: true,
-        interval: '',
-        legendFormat: '',
-        refId: 'reachabilityStat',
-      },
-    ],
+    queries,
   });
+
+  return {
+    runner: divideSumByCountTransformation(runner),
+  };
 }
 
-export function getReachabilityStat(metrics: DataSourceRef) {
-  const queryRunner = getQueryRunner(metrics);
-  return new VizPanel({
+export function getReachabilityStat(metrics: DataSourceRef, minStep: string) {
+  const { runner } = getQueryRunner(metrics, minStep);
+  return new ExplorablePanel({
     pluginId: 'stat',
     title: 'Reachability',
-    description: 'The percentage of all the checks that have succeeded during the whole time period.',
-    $data: queryRunner,
+    description: REACHABILITY_DESCRIPTION,
+    $data: runner,
     fieldConfig: {
-      overrides: [],
       defaults: {
-        decimals: 2,
-        // mappings: [
-        //   {
-        //     id: 0,
-        //     op: '=',
-        //     text: 'N/A',
-        //     type: 1,
-        //     value: 'null',
-        //   },
-        // ],
+        mappings: [
+          {
+            options: {
+              match: SpecialValueMatch.Null,
+              result: {
+                text: 'N/A',
+              },
+            },
+            type: MappingType.SpecialValue,
+          },
+        ],
         thresholds: {
           mode: ThresholdsMode.Absolute,
           steps: [
@@ -55,8 +76,12 @@ export function getReachabilityStat(metrics: DataSourceRef) {
             },
           ],
         },
+        decimals: 2,
+        max: 1,
+        min: 0,
         unit: 'percentunit',
       },
+      overrides: [],
     },
   });
 }

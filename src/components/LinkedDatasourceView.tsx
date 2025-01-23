@@ -1,50 +1,63 @@
-import React, { useContext } from 'react';
-import { Spinner } from '@grafana/ui';
-import { useNavigation } from 'hooks/useNavigation';
-import { ROUTES } from 'types';
-import { findLinkedDatasource } from 'utils';
-import { InstanceContext } from 'contexts/InstanceContext';
+import React from 'react';
+import { Alert, Card, Tag } from '@grafana/ui';
 
-interface Props {
-  type: 'loki' | 'prometheus';
+import { getUserPermissions } from 'data/permissions';
+import { useCanWriteLogs, useCanWriteMetrics } from 'hooks/useDSPermission';
+import { useLogsDS } from 'hooks/useLogsDS';
+import { useMetricsDS } from 'hooks/useMetricsDS';
+import { useSMDS } from 'hooks/useSMDS';
+
+interface LinkedDatasourceViewProps {
+  type: 'loki' | 'prometheus' | 'synthetic-monitoring-datasource';
 }
 
-const LinkedDatasourceView = ({ type }: Props) => {
-  const navigate = useNavigation();
-  const { instance, meta } = useContext(InstanceContext);
-  if (!instance.metrics || !instance.logs) {
-    return <Spinner />;
-  }
+export const LinkedDatasourceView = ({ type }: LinkedDatasourceViewProps) => {
+  const metricsDS = useMetricsDS();
+  const logsDS = useLogsDS();
+  const smDS = useSMDS();
 
-  const info = type === 'prometheus' ? instance.metrics : instance.logs;
-  const hostedId = type === 'prometheus' ? meta?.jsonData?.metrics.hostedId : meta?.jsonData?.logs.hostedId;
-  const datasource = findLinkedDatasource({
-    grafanaName: info.name,
-    hostedId: hostedId ?? 0,
-    uid: info.uid,
-  });
+  const { canWriteSM } = getUserPermissions();
+  const canEditLogs = useCanWriteLogs();
+  const canEditMetrics = useCanWriteMetrics();
 
-  const handleClick = () => {
-    if (datasource?.type === 'synthetic-monitoring-datasource') {
-      navigate(ROUTES.Home);
-    } else {
-      navigate(`datasources/edit/${datasource?.id}/`, {}, true);
-    }
+  const canEditMap = {
+    prometheus: canEditMetrics,
+    loki: canEditLogs,
+    'synthetic-monitoring-datasource': canWriteSM,
   };
 
-  if (!datasource) {
-    return <Spinner />;
+  const dsMap = {
+    prometheus: metricsDS,
+    loki: logsDS,
+    'synthetic-monitoring-datasource': smDS,
+  };
+
+  const ds = dsMap[type];
+
+  if (!ds) {
+    return (
+      <Alert title="Data source missing">
+        &quot;{type}&quot; data source is missing. Please configure it in the data sources settings.
+      </Alert>
+    );
   }
 
+  const showHref = canEditMap[type];
+
   return (
-    <div className="add-data-source-item" onClick={handleClick}>
-      <img className="add-data-source-item-logo" src={datasource.meta.info.logos.small} />
-      <div className="add-data-source-item-text-wrapper">
-        <span className="add-data-source-item-text">{datasource.name}</span>
-        <span className="add-data-source-item-desc">{datasource.type}</span>
-      </div>
-    </div>
+    <Card href={showHref ? `datasources/edit/${ds.uid}/` : undefined}>
+      <Card.Heading>{ds.name}</Card.Heading>
+      <Card.Figure>
+        <img width={40} height={40} src={ds.meta.info.logos.small} alt="" />
+      </Card.Figure>
+
+      {type !== 'synthetic-monitoring-datasource' && (
+        <Card.Tags>
+          <Tag name="Linked" />
+        </Card.Tags>
+      )}
+
+      <Card.Meta>{ds.type}</Card.Meta>
+    </Card>
   );
 };
-
-export default LinkedDatasourceView;

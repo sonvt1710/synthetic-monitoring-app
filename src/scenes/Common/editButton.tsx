@@ -1,10 +1,12 @@
-import { SceneReactObject, SceneVariable } from '@grafana/scenes';
-import { Button, Spinner } from '@grafana/ui';
-import { ChecksContext } from 'contexts/ChecksContext';
-import { useNavigation } from 'hooks/useNavigation';
-import React, { useContext } from 'react';
-import { ROUTES } from 'types';
-import { checkType } from 'utils';
+import React from 'react';
+import { SceneReactObject, SceneVariable, VariableValue } from '@grafana/scenes';
+import { LinkButton } from '@grafana/ui';
+
+import { Check } from 'types';
+import { ROUTES } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
+import { getUserPermissions } from 'data/permissions';
+import { useChecks } from 'data/useChecks';
 
 interface Props {
   job: SceneVariable;
@@ -12,24 +14,30 @@ interface Props {
 }
 
 function EditCheckButton({ job, instance }: Props) {
-  const { checks, loading } = useContext(ChecksContext);
-  const navigate = useNavigation();
+  const { data: checks = [], isLoading } = useChecks();
+  const url = getUrl(checks, instance.getValue(), job.getValue());
+  const { canWriteChecks } = getUserPermissions();
+
   return (
-    <Button
+    <LinkButton
       variant="secondary"
-      onClick={() => {
-        const check = checks.find((check) => check.target === instance.getValue() && check.job === job.getValue());
-        if (!check) {
-          return;
-        }
-        const type = checkType(check.settings);
-        navigate(`${ROUTES.EditCheck}/${type}/${check.id}`);
-      }}
-      disabled={loading || !checks}
+      href={url}
+      disabled={isLoading || !url || !canWriteChecks}
+      icon={isLoading ? 'fa fa-spinner' : 'edit'}
     >
-      {loading ? <Spinner /> : 'Edit check'}
-    </Button>
+      Edit check
+    </LinkButton>
   );
+}
+
+function getUrl(checks: Check[], target?: VariableValue | null, job?: VariableValue | null) {
+  const check = checks.find((check) => check.target === target && check.job === job);
+
+  if (!check) {
+    return undefined;
+  }
+
+  return `${generateRoutePath(ROUTES.EditCheck, { id: check.id ?? 'new' })}`;
 }
 
 export function getEditButton({ job, instance }: Props) {

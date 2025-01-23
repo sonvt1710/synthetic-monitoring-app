@@ -1,5 +1,7 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -19,13 +21,20 @@ function getQueryRunner(metrics: DataSourceRef) {
 }
 
 export function getLatencyByPhasePanel(metrics: DataSourceRef) {
-  return new VizPanel({
-    pluginId: 'barchart',
+  return new ExplorablePanel({
+    pluginId: 'timeseries',
     $data: getQueryRunner(metrics),
     title: 'Response latency by phase: $probe ⮕ $job / $instance',
     fieldConfig: {
       defaults: {
-        custom: {},
+        custom: {
+          drawStyle: 'bars',
+          fillOpacity: 100,
+          stacking: {
+            mode: 'normal',
+            group: 'A',
+          },
+        },
         color: {
           mode: 'palette-classic',
         },
@@ -46,25 +55,6 @@ export function getLatencyByPhasePanel(metrics: DataSourceRef) {
         links: [],
       },
       overrides: [],
-    },
-    options: {
-      xTickLabelRotation: 0,
-      xTickLabelSpacing: 100,
-
-      showValue: 'auto',
-      stacking: 'normal',
-      barWidth: 0.97,
-      fullHighlight: false,
-      tooltip: {
-        mode: 'single',
-        sort: 'none',
-      },
-      legend: {
-        showLegend: true,
-        displayMode: 'list',
-        placement: 'bottom',
-        calcs: [],
-      },
     },
   });
 }

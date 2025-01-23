@@ -1,342 +1,275 @@
-import React, { useState, useContext } from 'react';
+import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Alert, Button, Field, Input, Label, Legend, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import {
-  Modal,
-  Button,
-  Container,
-  ConfirmModal,
-  Field,
-  Input,
-  HorizontalGroup,
-  Legend,
-  Alert,
-  useStyles2,
-  Label,
-  Icon,
-} from '@grafana/ui';
-import { useForm, FormProvider } from 'react-hook-form';
-import { useAsyncCallback } from 'react-async-hook';
-import appEvents from 'grafana/app/core/app_events';
-import { Probe, SubmissionErrorWrapper, ProbePageParams } from 'types';
-import { hasRole } from 'utils';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ProbeSchema } from 'schemas/forms/ProbeSchema';
+
+import { ExtendedProbe, FeatureName, Probe } from 'types';
+import { ROUTES } from 'routing/types';
+import { getRoute } from 'routing/utils';
+import { useCanEditProbe } from 'hooks/useCanEditProbe';
+import { FeatureFlag } from 'components/FeatureFlag';
+import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
-import ProbeStatus from '../ProbeStatus';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { trackEvent, trackException } from 'analytics';
-import { GrafanaTheme2, AppEvents, OrgRole } from '@grafana/data';
-import { Clipboard } from 'components/Clipboard';
-import { SimpleMap } from '../SimpleMap';
-import { useParams } from 'react-router-dom';
-import { PluginPage } from 'components/PluginPage';
+import { ProbeRegionsSelect } from 'components/ProbeRegionsSelect';
+import { SimpleMap } from 'components/SimpleMap';
 
-interface Props {
-  probes?: Probe[];
-  onReturn: (reload: boolean) => void;
-}
+type ProbeEditorProps = {
+  actions?: ReactNode;
+  errorInfo?: { title: string; message: string };
+  onSubmit: (formValues: Probe) => void;
+  probe: ExtendedProbe;
+  submitText: string;
+  supportingContent?: ReactNode;
+  forceViewMode?: boolean;
+};
 
-const TEMPLATE_PROBE = {
-  name: '',
-  public: false,
-  latitude: 0.0,
-  longitude: 0.0,
-  region: '',
-  labels: [],
-  online: false,
-  onlineChange: 0,
-  version: 'unknown',
-  deprecated: false,
-} as Probe;
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  minInputWidth: css`
-    min-width: 200px;
-  `,
-  modalBody: css`
-    word-break: break-all;
-  `,
-  marginTop: css`
-    margin-top: ${theme.spacing(2)};
-  `,
-  marginBottom: css`
-    margin-bottom: ${theme.spacing(2)};
-  `,
-  externalLink: css`
-    display: flex;
-    align-items: center;
-    gap: ${theme.spacing(1)};
-  `,
-  link: css`
-    text-decoration: underline;
-  `,
-});
-
-const ProbeEditor = ({ probes, onReturn }: Props) => {
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showTokenModal, setShowTokenModal] = useState(false);
-  const [probeToken, setProbeToken] = useState('');
-  const { instance } = useContext(InstanceContext);
-
-  // If editing, find probe by id
-  const { id } = useParams<ProbePageParams>();
-  let probe: Probe = TEMPLATE_PROBE;
-  if (id && probes) {
-    const idInt = parseInt(id, 10);
-    probe = probes.find((probe) => probe.id === idInt) ?? TEMPLATE_PROBE;
-  }
-
-  const formMethods = useForm<Probe>({ defaultValues: probe, mode: 'onChange' });
+export const ProbeEditor = ({
+  actions,
+  errorInfo,
+  onSubmit,
+  probe,
+  submitText,
+  supportingContent,
+  forceViewMode, // When true, the form is in view mode
+}: ProbeEditorProps) => {
   const styles = useStyles2(getStyles);
+  const { canWriteProbes } = useCanEditProbe(probe);
+  const writeMode = canWriteProbes && !forceViewMode;
+  const form = useForm<Probe>({ defaultValues: probe, resolver: zodResolver(ProbeSchema) });
+  const { latitude, longitude } = form.watch();
+  const handleSubmit = form.handleSubmit((formValues: Probe) => onSubmit(formValues));
+  const { errors, isSubmitting } = form.formState;
+  const alertRef = useRef<HTMLDivElement>(null);
+  const loading = form.formState.isSubmitting;
 
-  const { execute: onSave, error } = useAsyncCallback(async (formValues: Probe) => {
-    trackEvent('addNewProbeSubmit');
-    // Form values always come back as a string, even for number inputs
-    formValues.latitude = Number(formValues.latitude);
-    formValues.longitude = Number(formValues.longitude);
+  const getCoordsFromMap = useCallback(
+    ([long, lat]: number[]) => {
+      const significantDigits = 5;
+      form.setValue('longitude', +long.toFixed(significantDigits));
+      form.setValue('latitude', +lat.toFixed(significantDigits));
+      form.clearErrors(['longitude', 'latitude']);
+    },
+    [form]
+  );
 
-    if (!instance.api) {
-      throw new Error('Not connected to the Synthetic Montoring datasource');
+  const description = probe.public
+    ? 'Public probes are run by Grafana Labs and can be used by all users. They cannot be edited.'
+    : 'Private probes are operated by your organization and can only run your checks.';
+
+  useEffect(() => {
+    if (alertRef.current && errorInfo) {
+      alertRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-
-    if (probe.id) {
-      await instance.api.updateProbe({
-        ...probe,
-        ...formValues,
-      });
-      onReturn(true);
-    } else {
-      const info = await instance.api.addProbe({
-        ...probe,
-        ...formValues,
-        public: false,
-      });
-      setShowTokenModal(true);
-      setProbeToken(info.token);
-    }
-  });
-
-  const submissionError = error as unknown as SubmissionErrorWrapper;
-
-  if (error) {
-    trackException(`addNewProbeSubmitException: ${error}`);
-  }
-
-  if (!probe || !instance) {
-    return <div>Loading...</div>;
-  }
-
-  const onRemoveProbe = async () => {
-    if (!probe.id || !instance.api) {
-      appEvents.emit(AppEvents.alertError, ['Could not delete probe, please refresh and try again']);
-      return;
-    }
-    try {
-      await instance.api.deleteProbe(probe.id);
-      onReturn(true);
-    } catch (e) {
-      const err = e as SubmissionErrorWrapper;
-      const message = `${err.data?.msg} Make sure there are no checks assigned to this probe and try again.`;
-      appEvents.emit(AppEvents.alertError, [message]);
-    }
-  };
-
-  const onResetToken = async () => {
-    const info = await instance.api?.resetProbeToken(probe);
-    setShowTokenModal(true);
-    setProbeToken(info.token);
-  };
-
-  const legend = probe.id ? 'Configuration' : 'Add Probe';
-
-  const isEditor = !probe.public && hasRole(OrgRole.Editor);
-  const { latitude, longitude } = formMethods.watch();
+  }, [alertRef, errorInfo]);
 
   return (
-    <PluginPage pageNav={{ text: probe.id ? probe.name : 'Add probe', description: 'Probe configuration' }}>
-      <HorizontalGroup align="flex-start">
-        <FormProvider {...formMethods}>
-          <form onSubmit={formMethods.handleSubmit(onSave)}>
-            <div>
-              <Legend>{legend}</Legend>
-              <Container margin="md">
-                {probe.public ? (
-                  <Label
-                    description="Public probes are run by Grafana Labs and can be used by all users"
-                    className={styles.marginBottom}
-                  >
-                    This probe is public
-                  </Label>
-                ) : (
-                  <Label
-                    description="Private probes are operated by your organization and can only run your checks."
-                    className={styles.marginBottom}
-                  >
-                    This probe is private
-                  </Label>
-                )}
+    <div className={styles.containerWrapper}>
+      <div className={styles.container}>
+        <div>
+          <FormProvider<Probe> {...form}>
+            <form onSubmit={handleSubmit}>
+              <div>
+                <Label description={description} className={styles.marginBottom}>
+                  {`This probe is ${probe.public ? 'public' : 'private'}.`}
+                </Label>
                 <Field
-                  error="Name is required"
-                  invalid={Boolean(formMethods.formState.errors.name)}
+                  error={errors.name?.message}
+                  invalid={Boolean(errors.name)}
                   label="Probe Name"
-                  description="Unique name of probe"
-                  disabled={!isEditor}
-                  className={styles.minInputWidth}
+                  description="Unique name for this probe."
+                  disabled={!writeMode}
                   required
                 >
                   <Input
+                    aria-label="Probe name"
                     type="text"
                     maxLength={32}
-                    {...formMethods.register('name', {
-                      required: true,
-                      maxLength: 32,
-                    })}
-                    id="probe-name-input"
+                    {...form.register('name')}
                     placeholder="Probe name"
                   />
                 </Field>
-              </Container>
-              <Container margin="md">
-                <Legend>Location information</Legend>
-                <Field
-                  error="Must be between -90 and 90"
-                  invalid={Boolean(formMethods.formState.errors.latitude)}
-                  required
-                  label="Latitude"
-                  description="Latitude coordinates of this probe"
-                  disabled={!isEditor}
-                  className={styles.minInputWidth}
-                >
-                  <Input
-                    {...formMethods.register('latitude', {
-                      required: true,
-                      max: 90,
-                      min: -90,
-                    })}
+                <div>
+                  <Legend>Location information</Legend>
+                  <Field
+                    error={errors.latitude?.message}
+                    invalid={Boolean(errors.latitude)}
+                    required
                     label="Latitude"
-                    max={90}
-                    min={-90}
-                    step={0.00001}
-                    id="probe-editor-latitude"
-                    type="number"
-                    placeholder="0.0"
-                  />
-                </Field>
-                <Field
-                  error="Must be between -180 and 180"
-                  invalid={Boolean(formMethods.formState.errors.longitude)}
-                  required
-                  label="Longitude"
-                  description="Longitude coordinates of this probe"
-                  disabled={!isEditor}
-                >
-                  <Input
-                    {...formMethods.register('longitude', {
-                      required: true,
-                      max: 180,
-                      min: -180,
-                    })}
+                    description="Latitude coordinates for this probe."
+                    disabled={!writeMode}
+                  >
+                    <Input
+                      {...form.register('latitude', {
+                        valueAsNumber: true,
+                      })}
+                      aria-label="Latitude"
+                      placeholder="0.0"
+                      step={0.00001}
+                      type="number"
+                    />
+                  </Field>
+                  <Field
+                    error={errors.longitude?.message}
+                    invalid={Boolean(errors.longitude)}
+                    required
                     label="Longitude"
-                    max={180}
-                    min={-180}
-                    step={0.00001}
-                    id="probe-editor-longitude"
-                    type="number"
-                    placeholder="0.0"
-                  />
-                </Field>
-                <SimpleMap latitude={latitude} longitude={longitude} />
-              </Container>
-              <Container margin="md">
-                <Field
-                  error="Region is required"
-                  invalid={Boolean(formMethods.formState.errors.region)}
-                  required
-                  label="Region"
-                  description="Region of this probe"
-                  disabled={!isEditor}
-                  className={styles.minInputWidth}
-                  aria-label="Region"
-                >
-                  <Input
-                    {...formMethods.register('region', { required: true })}
+                    description="Longitude coordinates for this probe."
+                    disabled={!writeMode}
+                  >
+                    <Input
+                      {...form.register('longitude', {
+                        valueAsNumber: true,
+                      })}
+                      aria-label="Longitude"
+                      step={0.00001}
+                      type="number"
+                      placeholder="0.0"
+                    />
+                  </Field>
+                  <div className={styles.marginBottom}>
+                    <SimpleMap
+                      canEdit={writeMode}
+                      latitude={latitude}
+                      longitude={longitude}
+                      onClick={getCoordsFromMap}
+                    />
+                    {writeMode && <div className={styles.caption}>Click on the map to place the probe.</div>}
+                  </div>
+                  <Field
                     label="Region"
-                    type="text"
-                    placeholder="Region"
+                    description="Region of this probe."
+                    disabled={!writeMode}
+                    error={errors.region?.message}
+                    invalid={Boolean(errors.region)}
+                    required
+                    htmlFor="region"
+                  >
+                    <Controller
+                      control={form.control}
+                      name="region"
+                      render={({ field }) => (
+                        <ProbeRegionsSelect
+                          disabled={!writeMode}
+                          id="region"
+                          invalid={Boolean(errors.region)}
+                          onChange={(value) => {
+                            field.onChange(value);
+                          }}
+                          value={field.value}
+                        />
+                      )}
+                    />
+                  </Field>
+                </div>
+                {canWriteProbes && <LabelField<Probe> disabled={!writeMode} labelDestination={'probe'} />}
+                <div className={styles.marginBottom}>
+                  <Legend>Capabilities</Legend>
+                  <HorizontalCheckboxField
+                    {...form.register('capabilities.disableScriptedChecks')}
+                    label="Disable scripted checks"
+                    description="Prevent probe from running k6 based scripted checks."
+                    disabled={!writeMode}
+                    id="capabilities.disableScriptedChecks"
                   />
-                </Field>
-              </Container>
-              <Container margin="md">
-                <LabelField isEditor={isEditor} limit={3} />
-              </Container>
-              <Container margin="md">
-                <HorizontalGroup>
-                  <Button
-                    type="submit"
-                    disabled={
-                      !isEditor ||
-                      formMethods.formState.isSubmitting ||
-                      Object.keys(formMethods.formState.errors ?? {}).length > 0
+                  <FeatureFlag name={FeatureName.BrowserChecks}>
+                    {({ isEnabled }) =>
+                      isEnabled ? (
+                        <HorizontalCheckboxField
+                          {...form.register('capabilities.disableBrowserChecks')}
+                          label="Disable browser checks"
+                          description="Prevent probe from running k6 based browser checks."
+                          disabled={!writeMode}
+                          id="capabilities.disableBrowserChecks"
+                        />
+                      ) : null
                     }
-                  >
-                    Save
-                  </Button>
-                  {probe.id && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={() => setShowDeleteModal(true)}
-                      disabled={!isEditor}
-                    >
-                      Delete Probe
-                    </Button>
+                  </FeatureFlag>
+                </div>
+                <div className={styles.buttonWrapper}>
+                  {canWriteProbes && (
+                    <>
+                      <Button
+                        icon={loading ? 'fa fa-spinner' : undefined}
+                        type="submit"
+                        disabled={!writeMode || isSubmitting || Object.keys(errors ?? {}).length > 0}
+                      >
+                        {submitText}
+                      </Button>
+                    </>
                   )}
-                  <ConfirmModal
-                    isOpen={showDeleteModal}
-                    title="Delete Probe"
-                    body="Are you sure you want to delete this Probe?"
-                    confirmText="Delete Probe"
-                    onConfirm={onRemoveProbe}
-                    onDismiss={() => setShowDeleteModal(false)}
-                  />
-                  <Button variant="secondary" onClick={() => onReturn(false)} type="button">
+                  {actions}
+                  <LinkButton variant="secondary" href={getRoute(ROUTES.Probes)}>
                     Back
-                  </Button>
-                </HorizontalGroup>
-              </Container>
-              {submissionError && (
-                <div className={styles.marginTop}>
-                  <Alert title="Save failed" severity="error">
-                    {`${submissionError.status}: ${
-                      submissionError.data.msg ?? submissionError.data.message ?? 'There was an error saving the check'
-                    }`}
-                  </Alert>
+                  </LinkButton>
                 </div>
-              )}
-              <Modal
-                isOpen={showTokenModal}
-                title="Probe Authentication Token"
-                icon={'lock'}
-                onDismiss={() => (probe.id ? setShowTokenModal(false) : onReturn(false))}
-              >
-                <Clipboard content={probeToken} />
-                <div className={styles.externalLink}>
-                  <a
-                    href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/private-probes/#add-a-new-probe-in-your-grafana-instance"
-                    target="blank"
-                    rel="noopener noreferer"
-                    className={styles.link}
-                  >
-                    Learn how to run a private probe
-                  </a>
-                  <Icon name="external-link-alt" />
-                </div>
-              </Modal>
+              </div>
+            </form>
+          </FormProvider>
+          {errorInfo && (
+            <div className={styles.marginTop} ref={alertRef}>
+              <Alert title={errorInfo.title} severity="error">
+                {errorInfo.message}
+              </Alert>
             </div>
-          </form>
-        </FormProvider>
-        {probe.id && <ProbeStatus probe={probe} onResetToken={onResetToken} />}
-      </HorizontalGroup>
-    </PluginPage>
+          )}
+        </div>
+        {supportingContent && <div className={styles.supportingWrapper}>{supportingContent}</div>}
+      </div>
+    </div>
   );
 };
 
-export default ProbeEditor;
+const getStyles = (theme: GrafanaTheme2) => {
+  const containerName = `probeEditor`;
+  const breakpoint = theme.breakpoints.values.md;
+  const containerQuery = `@container ${containerName} (max-width: ${breakpoint}px)`;
+  const mediaQuery = `@supports not (container-type: inline-size) @media (max-width: ${breakpoint}px)`;
+
+  return {
+    containerWrapper: css({
+      containerName,
+      containerType: `inline-size`,
+    }),
+    container: css({
+      display: 'grid',
+      gridTemplateColumns: `repeat(2, 1fr)`,
+      gap: theme.spacing(4),
+      width: `850px`,
+      maxWidth: `100%`,
+
+      [containerQuery]: {
+        gridTemplateColumns: '1fr',
+      },
+      [mediaQuery]: {
+        gridTemplateColumns: '1fr',
+      },
+    }),
+    buttonWrapper: css({
+      display: `flex`,
+      gap: theme.spacing(1),
+      marginTop: theme.spacing(4),
+    }),
+    marginTop: css({
+      marginTop: theme.spacing(2),
+    }),
+    marginBottom: css({
+      marginBottom: theme.spacing(2),
+    }),
+    caption: css({
+      fontStyle: `italic`,
+    }),
+    supportingWrapper: css({
+      [containerQuery]: {
+        borderTop: `1px solid ${theme.colors.border.medium}`,
+        paddingTop: theme.spacing(4),
+      },
+      [mediaQuery]: {
+        borderTop: `1px solid ${theme.colors.border.medium}`,
+        paddingTop: theme.spacing(4),
+      },
+    }),
+  };
+};

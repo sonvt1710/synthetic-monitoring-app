@@ -1,6 +1,7 @@
 import {
   EmbeddedScene,
   SceneControlsSpacer,
+  SceneDataLayerControls,
   SceneFlexItem,
   SceneFlexLayout,
   SceneRefreshPicker,
@@ -9,6 +10,8 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
+
+import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import {
   getAvgLatencyStat,
   getErrorLogs,
@@ -20,12 +23,13 @@ import {
   getUptimeStat,
   getVariables,
 } from 'scenes/Common';
+import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
-import { Check, CheckType, DashboardSceneAppConfig } from 'types';
+import { getMinStepFromFrequency } from 'scenes/utils';
 
-export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]) {
+export function getTcpScene({ metrics, logs, singleCheckMode }: DashboardSceneAppConfig, checks: Check[], newUptimeQuery = false) {
   return () => {
     if (checks.length === 0) {
       return getEmptyScene(CheckType.TCP);
@@ -36,14 +40,15 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, checks: 
       to: 'now',
     });
 
-    const { job, instance, probe } = getVariables(CheckType.TCP, metrics, checks);
+    const { job, instance, probe } = getVariables(CheckType.TCP, metrics, checks, singleCheckMode);
 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
-    const errorMap = getErrorRateMapPanel(metrics);
 
-    const uptime = getUptimeStat(metrics);
-    const reachability = getReachabilityStat(metrics);
-    const avgLatency = getAvgLatencyStat(metrics);
+    const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
+    const errorMap = getErrorRateMapPanel(metrics, minStep);
+    const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
+    const reachability = getReachabilityStat(metrics, minStep);
+    const avgLatency = getAvgLatencyStat(metrics, minStep);
     const sslExpiry = getSSLExpiryStat(metrics);
     const frequency = getFrequencyStat(metrics);
 
@@ -54,7 +59,7 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, checks: 
       }),
     });
 
-    const errorRateTimeseries = getErrorRateTimeseries(metrics);
+    const errorRateTimeseries = getErrorRateTimeseries(metrics, minStep);
     const topRight = new SceneFlexLayout({
       direction: 'column',
       children: [new SceneFlexItem({ height: 90, body: statRow }), new SceneFlexItem({ body: errorRateTimeseries })],
@@ -79,11 +84,14 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, checks: 
 
     const editButton = getEditButton({ job, instance });
 
+    const annotations = getAlertAnnotations(metrics);
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
+      $data: annotations,
       controls: [
         new VariableValueSelectors({}),
+        new SceneDataLayerControls(),
         new SceneControlsSpacer(),
         editButton,
         new SceneTimePicker({ isOnCanvas: true }),

@@ -1,8 +1,7 @@
-import React from 'react';
-import { css, cx } from '@emotion/css';
-import { Checkbox, Label, useStyles2 } from '@grafana/ui';
+import React, { ComponentProps, forwardRef } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useFormContext } from 'react-hook-form';
+import { Checkbox, Label, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
@@ -19,7 +18,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-interface Props {
+interface Props extends ComponentProps<typeof Checkbox> {
   disabled?: boolean;
   id: string;
   name?: string;
@@ -27,36 +26,21 @@ interface Props {
   description?: string;
   className?: string;
   value?: boolean;
-  onChange?: () => void;
 }
 
-export const HorizontalCheckboxField = ({
-  disabled,
-  id,
-  name,
-  label,
-  description,
-  className,
-  value,
-  onChange,
-}: Props) => {
-  const styles = useStyles2(getStyles);
-  const { register } = useFormContext();
-  const registered = name ? register(name) : {};
+export const HorizontalCheckboxField = forwardRef<HTMLInputElement, Props>(
+  ({ id, label, description, className, ...props }, ref) => {
+    const styles = useStyles2(getStyles);
 
-  return (
-    <div className={cx(styles.container, className)}>
-      <Checkbox
-        disabled={disabled}
-        id={id}
-        style={{ marginRight: '10px' }}
-        value={value}
-        onChange={onChange}
-        {...registered}
-      />
-      <Label description={description} htmlFor={id} className={styles.label}>
-        {label}
-      </Label>
-    </div>
-  );
-};
+    return (
+      <div className={cx(styles.container, className)}>
+        <Checkbox style={{ marginRight: '10px' }} id={id} ref={ref} {...props} />
+        <Label description={description} htmlFor={id} className={styles.label}>
+          {label}
+        </Label>
+      </div>
+    );
+  }
+);
+
+HorizontalCheckboxField.displayName = 'HorizontalCheckboxField';

@@ -1,18 +1,20 @@
-import { AppEvents, GrafanaTheme2, SelectableValue } from '@grafana/data';
-import { Alert, Button, Field, HorizontalGroup, Icon, Input, Label, Select, useStyles2 } from '@grafana/ui';
-import React, { useState, useContext } from 'react';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
-import { ALERT_SENSITIVITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
-import { css } from '@emotion/css';
-import { AlertLabels } from './AlertLabels';
-import { AlertAnnotations } from './AlertAnnotations';
+import React, { useState } from 'react';
 import { useAsyncCallback } from 'react-async-hook';
-import appEvents from 'grafana/app/core/app_events';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { SubCollapse } from './SubCollapse';
-import { transformAlertFormValues, alertDescriptionFromRule } from './alertingTransformations';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { AppEvents, GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { FetchResponse } from '@grafana/runtime';
+import { Alert, Button, Field, Icon, Input, Label, Select, Stack, useStyles2 } from '@grafana/ui';
+import appEvents from 'grafana/app/core/app_events';
+import { css } from '@emotion/css';
+
+import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
+import { useMetricsDS } from 'hooks/useMetricsDS';
+
+import { AlertAnnotations } from './AlertAnnotations';
+import { alertDescriptionFromRule, transformAlertFormValues } from './alertingTransformations';
+import { AlertLabels } from './AlertLabels';
+import { ALERT_SENSITIVITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
+import { SubCollapse } from './SubCollapse';
 
 export enum AlertTimeUnits {
   Milliseconds = 'ms',
@@ -85,7 +87,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   inlineText: css`
     white-space: nowrap;
-    flex-grow: 1;
   `,
   numberInput: css`
     width: 75px;
@@ -137,13 +138,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 type Props = {
+  canEdit: boolean;
   rule: AlertRule;
   onSubmit: (alertValues: AlertFormValues) => Promise<FetchResponse<unknown> | undefined>;
 };
 
-export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
+export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
   const defaultValues = getAlertFormValues(rule);
-  const { instance } = useContext(InstanceContext);
+  const metricsDS = useMetricsDS();
   const styles = useStyles2(getStyles);
   const [isOpen, setIsOpen] = useState(false);
   const formMethods = useForm<AlertFormValues>({
@@ -157,7 +159,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
     watch,
     reset,
   } = formMethods;
-  const currentValues = watch() as AlertFormValues;
+  const currentValues = watch();
   const currentLabels = watch('labels');
   const currentAnnotations = watch('annotations');
 
@@ -191,10 +193,14 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
     ) : (
       <div className={styles.container}>
         It looks like this rule has been edited in Cloud Alerting, and can no longer be edited in Synthetic Monitoring.
-        To update this rule, visit{' '}
-        <a href={`alerting/list?dataSource=${instance.metrics?.name}`} className={styles.link}>
-          Grafana Cloud Alerting
-        </a>
+        {metricsDS && (
+          <div>
+            To update this rule, visit{' '}
+            <a href={`alerting/list?dataSource=${metricsDS.name}`} className={styles.link}>
+              Grafana Cloud Alerting
+            </a>
+          </div>
+        )}
       </div>
     );
   }
@@ -211,15 +217,18 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
         <FormProvider {...formMethods}>
           <form className={styles.container} onSubmit={handleSubmit(execute)}>
             <Field label="Alert name">
-              <Input {...register('name', { required: true })} id="alert-name" />
+              <Input {...register('name', { required: true })} id="alert-name" disabled={!canEdit} />
             </Field>
             <div className={styles.expressionContainer}>
               <Label>Expression</Label>
-              <HorizontalGroup align="center" wrap marginHeight={0}>
+              <Stack alignItems="center" justifyContent="flex-start" wrap="wrap">
                 <span className={styles.inlineText}>Checks with a sensitivity level of</span>
                 <div className={styles.selectInput}>
                   <Controller
-                    render={({ field }) => <Select {...field} options={ALERT_SENSITIVITY_OPTIONS} />}
+                    render={({ field }) => {
+                      const { ref, ...rest } = field;
+                      return <Select {...rest} options={ALERT_SENSITIVITY_OPTIONS} disabled={!canEdit} />;
+                    }}
                     control={control}
                     name="sensitivity"
                   />
@@ -236,6 +245,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                     type="number"
                     data-testid="probePercentage"
                     id="alertProbePercentage"
+                    disabled={!canEdit}
                   />
                 </Field>
                 <span className={styles.inlineText}>% of probes report connection success for</span>
@@ -246,23 +256,29 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                 >
                   <Input
                     {...register('timeCount', { required: true, min: 1, max: 999 })}
-                    data-testid="timeCount"
+                    aria-label="Time count"
                     type="number"
                     className={styles.numberInput}
                     id="alertTimeCount"
+                    disabled={!canEdit}
                   />
                 </Field>
                 <div className={styles.selectInput}>
                   <Controller
-                    render={({ field }) => <Select {...field} options={TIME_UNIT_OPTIONS} />}
+                    render={({ field }) => {
+                      const { ref, ...rest } = field;
+                      return (
+                        <Select {...rest} options={TIME_UNIT_OPTIONS} aria-label="Time unit" disabled={!canEdit} />
+                      );
+                    }}
                     control={control}
                     name="timeUnit"
                   />
                 </div>
-              </HorizontalGroup>
+              </Stack>
             </div>
-            <AlertLabels />
-            <AlertAnnotations />
+            <AlertLabels canEdit={canEdit} />
+            <AlertAnnotations canEdit={canEdit} />
             <SubCollapse title="Config preview">
               <div>
                 <p className={styles.previewHelpText}>
@@ -305,17 +321,17 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
               </div>
             </SubCollapse>
             <hr className={styles.breakLine} />
-            <HorizontalGroup height="40px">
-              <Button type="submit" disabled={submitting}>
+            <Stack>
+              <Button type="submit" disabled={submitting || !canEdit}>
                 Save alert
               </Button>
               <Button variant="secondary" type="button" onClick={onCancel}>
                 Cancel
               </Button>
-            </HorizontalGroup>
+            </Stack>
             {error && (
               <div className={styles.submitFail}>
-                <Alert title="There was an error updating the alert rule">{error}</Alert>
+                <Alert title="There was an error updating the alert rule">{error.message}</Alert>
               </div>
             )}
           </form>

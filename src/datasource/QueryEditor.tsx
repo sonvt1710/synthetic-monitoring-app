@@ -1,14 +1,15 @@
 import React, { PureComponent } from 'react';
-import { defaults } from 'lodash';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
-import { SMDataSource } from './DataSource';
-import { SMQuery, SMOptions, QueryType, defaultQuery } from './types';
+import { getTemplateSrv } from '@grafana/runtime';
 import { MultiSelect, Select, Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { checkType } from 'utils';
-import { CheckType, FeatureName, Probe } from 'types';
-import { getTemplateSrv } from '@grafana/runtime';
-import { FeatureFlag } from 'components/FeatureFlag';
+import { defaults } from 'lodash';
+
+import { defaultQuery, QueryType, SMOptions, SMQuery } from './types';
+import { CheckType, Probe } from 'types';
+import { getCheckType } from 'utils';
+
+import { SMDataSource } from './DataSource';
 
 type Props = QueryEditorProps<SMDataSource, SMQuery, SMOptions>;
 
@@ -81,7 +82,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     const probes = await datasource.listProbes();
 
     const tracerouteCheckOptions = checks
-      .filter((check) => checkType(check.settings) === CheckType.Traceroute)
+      .filter((check) => getCheckType(check.settings) === CheckType.Traceroute)
       .map<SelectableValue<TracerouteCheckOptionValue>>((check) => {
         return {
           value: {
@@ -199,45 +200,38 @@ export class QueryEditor extends PureComponent<Props, State> {
     const probeOptions = getProbeOptionsForCheck(selectedTracerouteOption, probes);
     const selectedProbeOptions = this.getSelectedTracerouteProbeOptions();
     return (
-      <FeatureFlag name={FeatureName.Traceroute}>
-        {({ isEnabled }) => {
-          const queryTypes = isEnabled ? types : types.filter(({ value }) => value !== QueryType.Traceroute);
-          return (
-            <div>
-              <div className="gf-form">
-                <Select
-                  options={queryTypes}
-                  value={queryTypes.find((t) => t.value === query.queryType)}
-                  onChange={this.onQueryTypeChanged}
-                />
-              </div>
-              {isEnabled && query.queryType === QueryType.Traceroute && (
-                <>
-                  <div className={styles.tracerouteFieldWrapper}>
-                    <Select
-                      options={tracerouteCheckOptions}
-                      prefix="Check"
-                      value={tracerouteCheckOptions.find((option) => option.value === selectedTracerouteOption)}
-                      onChange={this.onTracerouteCheckChange}
-                      disabled={this.isOverridenByDashboardVariable()}
-                    />
-                  </div>
-                  <div className={styles.tracerouteFieldWrapper}>
-                    <MultiSelect
-                      options={probeOptions}
-                      prefix="Probe"
-                      allowCustomValue
-                      value={selectedProbeOptions}
-                      onChange={this.onTracerouteProbeChange}
-                      disabled={getTemplateSrv().replace('$probe') !== '$probe'}
-                    />
-                  </div>
-                </>
-              )}
+      <div>
+        <div className="gf-form">
+          <Select
+            options={types}
+            value={types.find((t) => t.value === query.queryType)}
+            onChange={this.onQueryTypeChanged}
+          />
+        </div>
+        {query.queryType === QueryType.Traceroute && (
+          <>
+            <div className={styles.tracerouteFieldWrapper}>
+              <Select
+                options={tracerouteCheckOptions}
+                prefix="Check"
+                value={tracerouteCheckOptions.find((option) => option.value === selectedTracerouteOption)}
+                onChange={this.onTracerouteCheckChange}
+                disabled={this.isOverridenByDashboardVariable()}
+              />
             </div>
-          );
-        }}
-      </FeatureFlag>
+            <div className={styles.tracerouteFieldWrapper}>
+              <MultiSelect
+                options={probeOptions}
+                prefix="Probe"
+                allowCustomValue
+                value={selectedProbeOptions}
+                onChange={this.onTracerouteProbeChange}
+                disabled={getTemplateSrv().replace('$probe') !== '$probe'}
+              />
+            </div>
+          </>
+        )}
+      </div>
     );
   }
 }

@@ -1,110 +1,122 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Field, Input, Container, TextArea } from '@grafana/ui';
-import { Collapse } from 'components/Collapse';
-import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
-import { CheckType } from 'types';
-import { validateTLSCACert, validateTLSClientCert, validateTLSClientKey, validateTLSServerName } from 'validation';
+import { Container, Field, Input, TextArea } from '@grafana/ui';
+import { get } from 'lodash';
 
-interface Props {
-  isEditor: boolean;
-  checkType: CheckType;
+import { TLSConfigFields } from './CheckEditor/CheckEditor.types';
+import { CheckFormValues, CheckFormValuesGRPC, CheckFormValuesHttp, CheckFormValuesTcp } from 'types';
+import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
+
+interface TLSConfigProps<T extends CheckFormValues = CheckFormValues> {
+  disabled?: boolean;
+  fields: TLSConfigFields<T>;
 }
 
-export const TLSConfig = ({ isEditor, checkType }: Props) => {
-  const [showTLS, setShowTLS] = useState(false);
+export const TLSConfig = <T extends CheckFormValuesHttp | CheckFormValuesTcp | CheckFormValuesGRPC>({
+  disabled,
+  fields,
+}: TLSConfigProps<T>) => {
   const {
     register,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<CheckFormValues>();
+  const tlsInsecureSkipVerify = fields.tlsInsecureSkipVerify?.name;
+  const serverName = fields.tlsServerName?.name;
+  const caCert = fields.tlsCaSCert?.name;
+  const clientCert = fields.tlsClientCert?.name;
+  const clientKey = fields.tlsClientKey?.name;
+
+  const serverNameError = serverName && get(errors, serverName);
+  const caCertError = caCert && get(errors, caCert);
+  const clientCertError = clientCert && get(errors, clientCert);
+  const clientKeyError = clientKey && get(errors, clientKey);
 
   return (
-    <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS} collapsible>
-      <HorizontalCheckboxField
-        id="tls-config-skip-validation"
-        name={`settings.${checkType}.tlsConfig.insecureSkipVerify`}
-        disabled={!isEditor}
-        label="Disable target certificate validation"
-      />
-      <Field
-        label="Server name"
-        description="Used to verify the hostname for the targets"
-        disabled={!isEditor}
-        invalid={Boolean(errors.settings?.[checkType]?.tlsConfig?.serverName)}
-        error={errors.settings?.[checkType]?.tlsConfig?.serverName}
-      >
-        <Input
-          id="tls-config-server-name"
-          {...register(`settings.${checkType}.tlsConfig.serverName`, {
-            validate: validateTLSServerName,
-            required: false,
-          })}
-          type="text"
-          placeholder="Server name"
-          disabled={!isEditor}
+    <>
+      {tlsInsecureSkipVerify && (
+        <HorizontalCheckboxField
+          id="tls-config-skip-validation"
+          disabled={disabled}
+          label="Disable target certificate validation"
+          data-fs-element="Check disable target certificate validation checkbox"
+          {...register(tlsInsecureSkipVerify)}
         />
-      </Field>
-      <Container>
+      )}
+      {serverName && (
         <Field
-          label="CA certificate"
-          description="Certificate must be in PEM format."
-          disabled={!isEditor}
-          invalid={Boolean(errors.settings?.[checkType]?.tlsConfig?.caCert)}
-          error={errors.settings?.[checkType]?.tlsConfig?.caCert?.message}
+          label="Server name"
+          description="Used to verify the hostname for the targets"
+          invalid={Boolean(serverNameError)}
+          error={serverNameError?.message}
         >
-          <TextArea
-            id="tls-config-ca-certificate"
-            {...register(`settings.${checkType}.tlsConfig.caCert`, {
-              validate: validateTLSCACert,
-              required: false,
-            })}
-            rows={2}
-            disabled={!isEditor}
-            placeholder="CA certificate"
+          <Input
+            id="tls-config-server-name"
+            {...register(serverName)}
+            type="text"
+            placeholder="Server name"
+            disabled={disabled}
+            data-fs-element="TLS server name input"
           />
         </Field>
-      </Container>
-      <Container>
-        <Field
-          label="Client certificate"
-          description="The client cert file for the targets. The certificate must be in PEM format."
-          disabled={!isEditor}
-          invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientCert)}
-          error={errors?.settings?.[checkType]?.tlsConfig?.clientCert?.message}
-        >
-          <TextArea
-            id="tls-config-client-cert"
-            {...register(`settings.${checkType}.tlsConfig.clientCert`, {
-              validate: validateTLSClientCert,
-              required: false,
-            })}
-            rows={2}
-            disabled={!isEditor}
-            placeholder="Client certificate"
-          />
-        </Field>
-      </Container>
-      <Container>
-        <Field
-          label="Client key"
-          description="The client key file for the targets. The key must be in PEM format."
-          disabled={!isEditor}
-          invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientKey)}
-          error={errors?.settings?.[checkType]?.tlsConfig?.clientKey?.message}
-        >
-          <TextArea
-            id="tls-config-client-key"
-            {...register(`settings.${checkType}.tlsConfig.clientKey`, {
-              validate: validateTLSClientKey,
-              required: false,
-            })}
-            type="password"
-            rows={2}
-            disabled={!isEditor}
-            placeholder="Client key"
-          />
-        </Field>
-      </Container>
-    </Collapse>
+      )}
+      {caCert && (
+        <Container>
+          <Field
+            label="CA certificate"
+            description="Certificate must be in PEM format."
+            invalid={Boolean(caCertError)}
+            error={caCertError?.message}
+          >
+            <TextArea
+              id="tls-config-ca-certificate"
+              {...register(caCert)}
+              rows={2}
+              disabled={disabled}
+              placeholder="CA certificate"
+              data-fs-element="TLS ca certificate textarea"
+            />
+          </Field>
+        </Container>
+      )}
+      {clientCert && (
+        <Container>
+          <Field
+            label="Client certificate"
+            description="The client cert file for the targets. The certificate must be in PEM format."
+            invalid={Boolean(clientCertError)}
+            error={clientCertError?.message}
+          >
+            <TextArea
+              id="tls-config-client-cert"
+              {...register(clientCert)}
+              rows={2}
+              disabled={disabled}
+              placeholder="Client certificate"
+              data-fs-element="TLS client certificate textarea"
+            />
+          </Field>
+        </Container>
+      )}
+      {clientKey && (
+        <Container>
+          <Field
+            label="Client key"
+            description="The client key file for the targets. The key must be in PEM format."
+            invalid={Boolean(clientKeyError)}
+            error={clientKeyError?.message}
+          >
+            <TextArea
+              id="tls-config-client-key"
+              {...register(clientKey)}
+              type="password"
+              rows={2}
+              disabled={disabled}
+              placeholder="Client key"
+              data-fs-element="TLS client key textarea"
+            />
+          </Field>
+        </Container>
+      )}
+    </>
   );
 };

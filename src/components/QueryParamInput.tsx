@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { Input, IconButton } from '@grafana/ui';
+import { IconButton, Input } from '@grafana/ui';
 
 export interface QueryParam {
   name: string;
@@ -7,6 +7,7 @@ export interface QueryParam {
 }
 
 interface Props {
+  index: number;
   queryParam: {
     name: string;
     value: string;
@@ -16,14 +17,16 @@ interface Props {
   onBlur?: () => void;
 }
 
-const QueryParamInput = ({ queryParam, onChange, onDelete, onBlur }: Props) => (
+export const QueryParamInput = ({ index, queryParam, onChange, onDelete, onBlur }: Props) => (
   <>
     <Input
+      aria-label={`Query param key ${index + 1}`}
       label="Key"
       onBlur={onBlur}
       type="text"
       placeholder="Key"
       value={queryParam.name}
+      data-fs-element="Query param key input"
       onChange={(e: ChangeEvent<HTMLInputElement>) =>
         onChange({
           ...queryParam,
@@ -32,11 +35,13 @@ const QueryParamInput = ({ queryParam, onChange, onDelete, onBlur }: Props) => (
       }
     />
     <Input
+      aria-label={`Query param value ${index + 1}`}
       label="Value"
       onBlur={onBlur}
       type="text"
       placeholder="Value"
       value={queryParam.value}
+      data-fs-element="Query param value input"
       onChange={(e: ChangeEvent<HTMLInputElement>) =>
         onChange({
           ...queryParam,
@@ -44,8 +49,13 @@ const QueryParamInput = ({ queryParam, onChange, onDelete, onBlur }: Props) => (
         })
       }
     />
-    <IconButton name="minus-circle" onClick={onDelete} type="button" />
+    <IconButton
+      aria-label={`Delete param ${index + 1}`}
+      name="minus-circle"
+      onClick={onDelete}
+      type="button"
+      tooltip="Delete"
+      data-fs-element="Query param delete button"
+    />
   </>
 );
-
-export default QueryParamInput;
