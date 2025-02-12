@@ -1,10 +1,13 @@
-import { Input, Button, Label, Field, useStyles2 } from '@grafana/ui';
-import React, { FC, Fragment } from 'react';
+import React, { Fragment } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { SubCollapse } from './SubCollapse';
-import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Field, Input, Label, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+
+import { AlertFormValues } from 'types';
 import { validateLabelName, validateLabelValue } from 'validation';
+
+import { SubCollapse } from './SubCollapse';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   grid: css`
@@ -22,15 +25,15 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 const NAME = 'labels';
 
-export const AlertLabels: FC = () => {
+export const AlertLabels = ({ canEdit }: { canEdit: boolean }) => {
   const styles = useStyles2(getStyles);
   const {
     control,
     register,
     formState: { errors },
     watch,
-  } = useFormContext();
-  const { fields, append, remove } = useFieldArray({
+  } = useFormContext<AlertFormValues>();
+  const { fields, append, remove } = useFieldArray<AlertFormValues>({
     control,
     name: NAME,
   });
@@ -53,33 +56,45 @@ export const AlertLabels: FC = () => {
         ) : null}
         {fields.map((field, labelIndex) => (
           <Fragment key={field.id}>
-            <Field error={errors?.labels?.[labelIndex]?.name?.message} invalid={errors?.labels?.[labelIndex]?.name}>
+            <Field
+              error={errors?.labels?.[labelIndex]?.name?.message}
+              invalid={Boolean(errors?.labels?.[labelIndex]?.name)}
+            >
               <Input
                 {...register(`${NAME}.${labelIndex}.name` as const, {
                   validate: (value) => validateLabelName(value, labels),
                 })}
                 placeholder="Name"
                 data-testid={`alert-labelName-${labelIndex}`}
+                disabled={!canEdit}
               />
             </Field>
-            <Field error={errors?.labels?.[labelIndex]?.value?.message} invalid={errors?.labels?.[labelIndex]?.value}>
+            <Field
+              error={errors?.labels?.[labelIndex]?.value?.message}
+              invalid={Boolean(errors?.labels?.[labelIndex]?.value)}
+            >
               <Input
                 {...register(`${NAME}.${labelIndex}.value` as const, {
                   validate: (value) => validateLabelValue(value),
                 })}
                 placeholder="Value"
                 data-testid={`alert-labelValue-${labelIndex}`}
+                disabled={!canEdit}
               />
             </Field>
-            <Button type="button" onClick={() => remove(labelIndex)} fill="text">
-              Delete
-            </Button>
+            {canEdit && (
+              <Button type="button" onClick={() => remove(labelIndex)} fill="text">
+                Delete
+              </Button>
+            )}
           </Fragment>
         ))}
       </div>
-      <Button type="button" fill="text" size="sm" icon="plus" onClick={() => append({})} className={styles.addButton}>
-        Add label
-      </Button>
+      {canEdit && (
+        <Button type="button" fill="text" size="sm" icon="plus" onClick={() => append({})} className={styles.addButton}>
+          Add label
+        </Button>
+      )}
     </SubCollapse>
   );
 };

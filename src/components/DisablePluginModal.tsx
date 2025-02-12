@@ -1,24 +1,28 @@
+import React, { useState } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
-import { Alert, Button, HorizontalGroup, Modal, Spinner } from '@grafana/ui';
-import React, { useContext, useState } from 'react';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { Alert, Button, Modal, Stack } from '@grafana/ui';
+
+import { FaroEvent, reportEvent } from 'faro';
+import { useMeta } from 'hooks/useMeta';
+import { useSMDS } from 'hooks/useSMDS';
 
 type Props = {
   isOpen: boolean;
   onDismiss: () => void;
-  pluginId: string;
 };
 
-export const DisablePluginModal = ({ isOpen, onDismiss, pluginId }: Props) => {
-  const { instance, loading } = useContext(InstanceContext);
+export const DisablePluginModal = ({ isOpen, onDismiss }: Props) => {
+  const smDS = useSMDS();
+  const meta = useMeta();
   const [error, setError] = useState<string | undefined>();
 
   const disableTenant = async () => {
     try {
-      await instance.api?.disableTenant();
+      reportEvent(FaroEvent.DISABLE_PLUGIN);
+      await smDS.disableTenant();
       await getBackendSrv()
         .fetch({
-          url: `/api/plugins/${pluginId}/settings`,
+          url: `/api/plugins/${meta.id}/settings`,
           method: 'POST',
           headers: { 'X-Grafana-NoCache': 'true' },
           data: {
@@ -29,6 +33,7 @@ export const DisablePluginModal = ({ isOpen, onDismiss, pluginId }: Props) => {
       window.location.reload();
     } catch (e) {
       const err = e as Error;
+      reportError(e);
       setError(err.message ?? 'Something went wrong trying to disable the plugin. Please contact support.');
     }
   };
@@ -36,18 +41,16 @@ export const DisablePluginModal = ({ isOpen, onDismiss, pluginId }: Props) => {
   return (
     <Modal title="Disable synthetic monitoring" isOpen={isOpen} onDismiss={onDismiss}>
       <p>Are you sure? Disabling the plugin will also disable all your checks.</p>
-      {loading ? (
-        <Spinner />
-      ) : (
-        <HorizontalGroup>
-          <Button variant="destructive" onClick={disableTenant}>
-            Disable
-          </Button>
-          <Button variant="secondary" onClick={onDismiss}>
-            Cancel
-          </Button>
-        </HorizontalGroup>
-      )}
+
+      <Stack>
+        <Button variant="destructive" onClick={disableTenant}>
+          Disable
+        </Button>
+        <Button variant="secondary" onClick={onDismiss}>
+          Cancel
+        </Button>
+      </Stack>
+
       {error && <Alert title="Disable failed">{error}</Alert>}
     </Modal>
   );

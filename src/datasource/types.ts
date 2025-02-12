@@ -18,10 +18,14 @@ export const defaultQuery: SMQuery = {
   queryType: QueryType.Probes,
 } as SMQuery;
 
-export interface LinkedDatasourceInfo {
+export interface ProvisioningLinkedDatasourceInfo {
   grafanaName: string;
   hostedId: number;
-  uid?: string;
+}
+
+export interface LinkedDatasourceInfo extends ProvisioningLinkedDatasourceInfo {
+  type: string;
+  uid: string;
 }
 
 export interface DashboardInfo {
@@ -46,7 +50,6 @@ export interface SMOptions extends DataSourceJsonData {
   metrics: LinkedDatasourceInfo;
   initialized?: boolean;
   logs: LinkedDatasourceInfo;
-  dashboards: DashboardInfo[];
 }
 
 /**
@@ -107,14 +110,24 @@ export interface TracesByHost {
 }
 
 export enum AccountingClassNames {
+  browser = 'browser',
+  browser_basic = 'browser_basic',
   dns = 'dns',
   dns_basic = 'dns_basic',
+  grpc = 'grpc',
+  grpc_basic = 'grpc_basic',
+  grpc_ssl = 'grpc_ssl',
+  grpc_ssl_basic = 'grpc_ssl_basic',
   http = 'http',
   http_basic = 'http_basic',
   http_ssl = 'http_ssl',
   http_ssl_basic = 'http_ssl_basic',
+  multihttp = 'multihttp',
+  multihttp_basic = 'multihttp_basic',
   ping = 'ping',
   ping_basic = 'ping_basic',
+  scripted = 'scripted',
+  scripted_basic = 'scripted_basic',
   tcp = 'tcp',
   tcp_basic = 'tcp_basic',
   tcp_ssl = 'tcp_ssl',
@@ -124,6 +137,7 @@ export enum AccountingClassNames {
 }
 
 interface AccountingClass {
+  CheckClass: number;
   CheckType: number;
   Series: number;
 }

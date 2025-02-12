@@ -1,67 +1,45 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, Icon } from '@grafana/ui';
-import { Check, CheckType } from 'types';
+import { Icon, Label, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+
+import { CheckFormValues, CheckType } from 'types';
+import { checkFormValuesToUsageCalcValues } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  container: css`
-    background-color: ${theme.colors.background.secondary};
-    padding: ${theme.spacing(3)};
-    margin-bottom: ${theme.spacing(2)};
-  `,
-  header: css`
-    margin-bottom: ${theme.spacing(2)};
-  `,
-  icon: css`
-    margin-right: ${theme.spacing(1)};
-  `,
-  section: css`
-    margin-bottom: ${theme.spacing(1)};
-  `,
-  helpSection: css`
-    margin-top: ${theme.spacing(2)};
-  `,
-  value: css`
-    margin-left: ${theme.spacing(0.5)};
-  `,
-  link: css`
-    text-decoration: underline;
-  `,
+  container: css({
+    marginBottom: theme.spacing(6),
+  }),
+  calcList: css({
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: theme.spacing(1),
+  }),
+  icon: css({
+    marginRight: theme.spacing(1),
+  }),
+  section: css({
+    textWrap: 'nowrap',
+  }),
+  value: css({
+    marginLeft: theme.spacing(0.5),
+  }),
+  link: css({
+    textDecoration: 'underline',
+  }),
 });
 
-const getCheckFromValues = (
-  checkType: CheckType | undefined,
-  frequency = 0,
-  probes: number[] = [],
-  publishAdvancedMetrics = false
-): Partial<Check> | undefined => {
-  if (!checkType) {
-    return;
-  }
-  return {
-    frequency: frequency * 1000,
-    probes,
-    basicMetricsOnly: !publishAdvancedMetrics,
-    settings: {
-      [checkType]: {},
-    },
-  };
-};
+const hideTelemetryForTypes = [CheckType.Scripted, CheckType.MULTI_HTTP, CheckType.Browser];
 
-export const CheckUsage: FC = () => {
+export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
   const styles = useStyles2(getStyles);
-  const { watch } = useFormContext();
-  const [checkType, frequency, probes, publishAdvancedMetrics] = watch([
-    'checkType',
-    'frequency',
-    'probes',
-    'publishAdvancedMetrics',
-  ]);
-  const check = getCheckFromValues(checkType?.value, frequency, probes, publishAdvancedMetrics);
-  const usage = useUsageCalc(check);
+  const { watch } = useFormContext<CheckFormValues>();
+  const checkFormValues = watch();
+  const usage = useUsageCalc([checkFormValuesToUsageCalcValues(checkFormValues)]);
+
+  const hideTelemetry = hideTelemetryForTypes.includes(checkType);
 
   if (!usage) {
     return null;
@@ -69,32 +47,44 @@ export const CheckUsage: FC = () => {
 
   return (
     <div className={styles.container}>
-      <h5 className={styles.header}>Approximate expected usage for this check</h5>
-      <div className={styles.section}>
-        <Icon className={styles.icon} name="calendar-alt" />
-        Checks per month: <strong className={styles.value}>{usage.checksPerMonth.toLocaleString()}</strong>
-      </div>
-      <div className={styles.section}>
-        <Icon className={styles.icon} name="chart-line" />
-        Active series: <strong className={styles.value}>{usage.activeSeries.toLocaleString()}</strong>
-      </div>
-      <div className={styles.section}>
-        <Icon className={styles.icon} name="clock-nine" />
-        Data points per minute : <strong className={styles.value}>{usage.dpm.toLocaleString()}</strong>
-      </div>
-      <div className={styles.section}>
-        <Icon className={styles.icon} name="database" />
-        Log usage per month (GB): <strong className={styles.value}>{usage.logsGbPerMonth.toLocaleString()}</strong>
-      </div>
-      <div className={styles.helpSection}>
-        <a
-          href="https://grafana.com/docs/grafana-cloud/fundamentals/active-series-and-dpm/"
-          className={styles.link}
-          target="_blank"
-          rel="noopenner noreferrer"
-        >
-          Learn more about active series and data points per minute
-        </a>
+      <Label
+        description={
+          !hideTelemetry && (
+            <a
+              href="https://grafana.com/docs/grafana-cloud/fundamentals/active-series-and-dpm/"
+              className={styles.link}
+              target="_blank"
+              rel="noopenner noreferrer"
+            >
+              Learn more about active series and data points per minute
+            </a>
+          )
+        }
+      >
+        Approximate expected usage for this check
+      </Label>
+      <div className={styles.calcList}>
+        <div className={styles.section}>
+          <Icon className={styles.icon} name="calendar-alt" />
+          Test executions per month: <strong className={styles.value}>{usage.checksPerMonth.toLocaleString()}</strong>
+        </div>
+        {!hideTelemetry && (
+          <>
+            <div className={styles.section}>
+              <Icon className={styles.icon} name="chart-line" />
+              Active series: <strong className={styles.value}>{usage.activeSeries.toLocaleString()}</strong>
+            </div>
+            <div className={styles.section}>
+              <Icon className={styles.icon} name="clock-nine" />
+              Data points per minute : <strong className={styles.value}>{usage.dpm.toLocaleString()}</strong>
+            </div>
+            <div className={styles.section}>
+              <Icon className={styles.icon} name="database" />
+              Log usage per month (GB):{' '}
+              <strong className={styles.value}>{usage.logsGbPerMonth.toLocaleString()}</strong>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

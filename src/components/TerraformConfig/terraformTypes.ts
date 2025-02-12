@@ -1,8 +1,20 @@
-import { DnsSettings, HttpSettings, BasicAuth, HeaderMatch, TcpSettings, TCPQueryResponse, Probe } from 'types';
+import {
+  BasicAuth,
+  DnsSettings,
+  GRPCSettings,
+  HeaderMatch,
+  HttpSettings,
+  Label,
+  Probe,
+  TCPQueryResponse,
+  TcpSettings,
+} from 'types';
+import { MultiHttpEntry, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
 
 export interface TFOutput {
   config: TFConfig;
   checkCommands: string[];
+  probeCommands: string[];
 }
 
 export interface TFConfig {
@@ -29,10 +41,53 @@ export interface TFCheck {
 }
 
 export type TFLabels = { [key: string]: string };
-type TFSettings = TFHttpSettings | TFPingSettings | TFTcpSettings | TFDnsSettings | TFTracerouteSettings;
-export type TFCheckSettings = {
-  [key: string]: TFSettings;
+
+type KeyedTFHttpSettings = {
+  http: TFHttpSettings;
 };
+
+type KeyedTFPingSettings = {
+  ping: TFPingSettings;
+};
+
+type KeyedTFTcpSettings = {
+  tcp: TFTcpSettings;
+};
+
+type KeyedTFDnsSettings = {
+  dns: TFDnsSettings;
+};
+
+type KeyedTFTracerouteSettings = {
+  traceroute: TFTracerouteSettings;
+};
+
+type KeyedTFMultiHTTPSettings = {
+  multihttp: TFMultiHTTPSettings;
+};
+
+type KeyedTFScriptedSettings = {
+  scripted: {};
+};
+
+type KeyedTFBrowserSettings = {
+  browser: {};
+};
+
+type KeyedTFGRPCCheckSettings = {
+  grpc: TFGRPCSettings;
+};
+
+export type TFCheckSettings =
+  | KeyedTFBrowserSettings
+  | KeyedTFDnsSettings
+  | KeyedTFGRPCCheckSettings
+  | KeyedTFHttpSettings
+  | KeyedTFMultiHTTPSettings
+  | KeyedTFPingSettings
+  | KeyedTFScriptedSettings
+  | KeyedTFTcpSettings
+  | KeyedTFTracerouteSettings;
 
 interface TFFailIfMatchesNotMatches {
   fail_if_matches_regexp?: string[];
@@ -52,6 +107,11 @@ interface TFDnsSettings
   validate_additional_rrs: TFFailIfMatchesNotMatches;
 }
 
+interface TFGRPCSettings extends Omit<GRPCSettings, 'ipVersion' | 'tlsConfig'> {
+  ip_version?: string;
+  tls_config?: TFTlsConfig;
+}
+
 interface TFHttpSettings
   extends Omit<
     HttpSettings,
@@ -65,7 +125,6 @@ interface TFHttpSettings
     | 'basicAuth'
     | 'failIfSSL'
     | 'failIfNotSSL'
-    | 'validStatusCodes'
     | 'validHTTPVersions'
     | 'failIfBodyMatchesRegexp'
     | 'failIfBodyNotMatchesRegexp'
@@ -109,16 +168,37 @@ interface TFTracerouteSettings {
   ptr_lookup: boolean;
 }
 
+interface TFMultiHTTPSettings {
+  entries: TFMultiHttpEntry[];
+}
+
+export interface TFMultiHttpEntry extends Omit<MultiHttpEntry, 'request'> {
+  request: TFMultiHttpRequest;
+}
+
+interface TFMultiHttpRequest extends Omit<RequestProps, 'queryFields' | 'postData' | 'body'> {
+  query_fields?: Label[];
+  post_data?: {
+    mime_type: string;
+    text: string;
+  };
+  body: {
+    content_type?: string;
+    content_encoding?: string;
+    payload?: string;
+  };
+}
+
 interface TFHeaderMatch extends Omit<HeaderMatch, 'allowMissing'> {
   allow_missing?: string;
 }
 
 export interface TFTlsConfig {
-  ca_cert: string;
-  client_cert: string;
-  client_key: string;
-  insecure_skip_verify: boolean;
-  server_name: string;
+  ca_cert?: string;
+  client_cert?: string;
+  client_key?: string;
+  insecure_skip_verify?: boolean;
+  server_name?: string;
 }
 
 export interface TFProbeConfig {

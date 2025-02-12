@@ -1,188 +1,601 @@
-# Change Log
+# Changelog
 
-# [1.11.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.2...v1.11.3) (2023-7-10)
+## [1.18.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.17.0...v1.18.0) (2025-02-04)
+
+
+### Features
+
+* Alerts per check ([#1011](https://github.com/grafana/synthetic-monitoring-app/issues/1011)) ([ef8c3f3](https://github.com/grafana/synthetic-monitoring-app/commit/ef8c3f3c9b0949a81977c209dd5c3d83906763b8))
+* sort probes alphabetically ([#1050](https://github.com/grafana/synthetic-monitoring-app/issues/1050)) ([7bc5ede](https://github.com/grafana/synthetic-monitoring-app/commit/7bc5ede93b6c1b3ce2eaa7923704893cc9b5550d))
+
+
+### Fixes
+
+* add displayName on top of name rather than replace ([#1055](https://github.com/grafana/synthetic-monitoring-app/issues/1055)) ([b8264af](https://github.com/grafana/synthetic-monitoring-app/commit/b8264af83ee8a4583a2f98115bd71f8cf53ded17))
+* fix broken checklist test ([#1058](https://github.com/grafana/synthetic-monitoring-app/issues/1058)) ([3be444d](https://github.com/grafana/synthetic-monitoring-app/commit/3be444d8ba3fd149f5eb2892368bb821f4228722))
+* strip back ci.yml checks ([#1051](https://github.com/grafana/synthetic-monitoring-app/issues/1051)) ([c04a797](https://github.com/grafana/synthetic-monitoring-app/commit/c04a79758bec2313870e35b7f5a3b943dde951fe))
+
+
+### Miscellaneous Chores
+
+* introduce Fishery as object factory and yarn dev:msw ([#1023](https://github.com/grafana/synthetic-monitoring-app/issues/1023)) ([0253f91](https://github.com/grafana/synthetic-monitoring-app/commit/0253f91d070f2684ea5e4ea54aa39add98f9f71f))
+
+## [1.17.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.12...v1.17.0) (2025-01-28)
+
+
+### Features
+
+* add policy bot configuration ([#1047](https://github.com/grafana/synthetic-monitoring-app/issues/1047)) ([406851a](https://github.com/grafana/synthetic-monitoring-app/commit/406851ab0f72a79f1c02a1378cd9e42772a07431))
+* increase check timeout to scripted, browser and multihttp checks ([#1049](https://github.com/grafana/synthetic-monitoring-app/issues/1049)) ([df9c5d9](https://github.com/grafana/synthetic-monitoring-app/commit/df9c5d97a485475b618a7be93ad43c2c5fdc124d))
+
+
+### Fixes
+
+* add new probes metadata ([#1044](https://github.com/grafana/synthetic-monitoring-app/issues/1044)) ([006bc43](https://github.com/grafana/synthetic-monitoring-app/commit/006bc43071a0a642d8262a6f3d7fa2695617b7d6))
+* wrap labels to always display View dashboard button ([#1045](https://github.com/grafana/synthetic-monitoring-app/issues/1045)) ([8c45572](https://github.com/grafana/synthetic-monitoring-app/commit/8c45572631cdf956327e8b6afe2308a663c3ba28))
+
+## [1.16.12](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.11...v1.16.12) (2025-01-14)
+
+
+### Fixes
+
+* change dirty strategy in check form ([#1037](https://github.com/grafana/synthetic-monitoring-app/issues/1037)) ([25ee12f](https://github.com/grafana/synthetic-monitoring-app/commit/25ee12f59d67f6cf8efb27865105fb80894d15b0))
+* filter by probe on data transferred and assertions panels for browser and scripted checks ([#1030](https://github.com/grafana/synthetic-monitoring-app/issues/1030)) ([23cf761](https://github.com/grafana/synthetic-monitoring-app/commit/23cf761c879dee96ece5b89f8ab7b8be9de3aecc))
+* handle deprecated probes in the UI ([#1040](https://github.com/grafana/synthetic-monitoring-app/issues/1040)) ([c7b23ed](https://github.com/grafana/synthetic-monitoring-app/commit/c7b23ed9164a69af246dad266f1fd3cbae4109a1))
+* keep reference of submitting form internally ([#1039](https://github.com/grafana/synthetic-monitoring-app/issues/1039)) ([bd91a18](https://github.com/grafana/synthetic-monitoring-app/commit/bd91a18214a287b7478ddf4356405e1d1ca7a11a))
+
+
+### Miscellaneous Chores
+
+* undo rollback to get main back on track ([#1035](https://github.com/grafana/synthetic-monitoring-app/issues/1035)) ([e287f10](https://github.com/grafana/synthetic-monitoring-app/commit/e287f10a7093cb9f9e7bfbe2d10cd216f63328ef))
+
+## [1.16.11](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.10...v1.16.11) (2024-12-19)
+
+### Fixes
+
+* Revert to v1.16.9 ([#1027](https://github.com/grafana/synthetic-monitoring-app/issues/1027)) ([51e4d55](https://github.com/grafana/synthetic-monitoring-app/commit/51e4d5573d771f8aecd356a4dcb9a536b4c6f782))
+
+
+## [1.16.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.9...v1.16.10) (2024-12-17)
+
+
+### Features
+
+* prompt on unsaved unload ([#1002](https://github.com/grafana/synthetic-monitoring-app/issues/1002)) ([9747b27](https://github.com/grafana/synthetic-monitoring-app/commit/9747b2778e824059768848014c53fba616a0d95a))
+
+
+### Fixes
+
+* add synthetic-monitoring-dev as owners of release files ([#1010](https://github.com/grafana/synthetic-monitoring-app/issues/1010)) ([d703e42](https://github.com/grafana/synthetic-monitoring-app/commit/d703e426e1e8a4c67689dd9794c4fd1f500fcf09))
+
+
+### Miscellaneous Chores
+
+* **deps:** bump nanoid from 3.3.7 to 3.3.8 ([#1018](https://github.com/grafana/synthetic-monitoring-app/issues/1018)) ([77032d0](https://github.com/grafana/synthetic-monitoring-app/commit/77032d060323c49ed68394a6e242b0b6aa528d29))
+* update checks UI styling ([#1020](https://github.com/grafana/synthetic-monitoring-app/issues/1020)) ([2b69b02](https://github.com/grafana/synthetic-monitoring-app/commit/2b69b024e2759e862b6c1cc490e4490ccf4f4df4))
+
+## [1.16.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.8...v1.16.9) (2024-11-29)
+
+
+### Fixes
+
+* create and organise CheckList page folder with dependent components ([#998](https://github.com/grafana/synthetic-monitoring-app/issues/998)) ([f45108e](https://github.com/grafana/synthetic-monitoring-app/commit/f45108eaf3cab5e9a6f94fb96d26c9bf6296ff1f))
+* filter out disabled checks for execution count total ([#999](https://github.com/grafana/synthetic-monitoring-app/issues/999)) ([5383102](https://github.com/grafana/synthetic-monitoring-app/commit/53831026305a50b0102ef82817ab89015c17179c))
+* moved routing components to own high-level folder ([#997](https://github.com/grafana/synthetic-monitoring-app/issues/997)) ([02a0a95](https://github.com/grafana/synthetic-monitoring-app/commit/02a0a9583a7c66d50bf7976e2c2d58cbb1f5bf07))
+
+
+### Miscellaneous Chores
+
+* update codeowners ([#1004](https://github.com/grafana/synthetic-monitoring-app/issues/1004)) ([edbf7a7](https://github.com/grafana/synthetic-monitoring-app/commit/edbf7a76f44aef259363011c57139c7e6c8fc87d))
+
+## [1.16.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.7...v1.16.8) (2024-11-25)
+
+### Features
+* Feat/rework config page ([#990](https://github.com/grafana/synthetic-monitoring-app/pull/990))([56b05c3](https://github.com/grafana/synthetic-monitoring-app/commit/56b05c39e39e73a81656e43a6d27c1dc836bf6ab))
+
+### Fixes
+
+* probe selector column header color ([#995](https://github.com/grafana/synthetic-monitoring-app/issues/995)) ([08dbfba](https://github.com/grafana/synthetic-monitoring-app/commit/08dbfba0e18524d72b59c04bbe9e877abaed1a37))
+
+### Miscellaneous Chores
+
+* `react-router-dom` migration ([#980](https://github.com/grafana/synthetic-monitoring-app/issues/980)) ([f11b89a](https://github.com/grafana/synthetic-monitoring-app/commit/f11b89ae6fa1a8c42596dcb79de6f24772c94ea8))
+* **deps:** bump cross-spawn from 7.0.3 to 7.0.6 ([#994](https://github.com/grafana/synthetic-monitoring-app/issues/994)) ([61073a3](https://github.com/grafana/synthetic-monitoring-app/commit/61073a33dc0bf172d659ea43431fee59f901920b))
+
+## [1.16.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.6...v1.16.7) (2024-11-15)
+
+
+### Fixes
+
+* Changelog format ([#991](https://github.com/grafana/synthetic-monitoring-app/issues/991)) ([1142128](https://github.com/grafana/synthetic-monitoring-app/commit/1142128f3cc158682a1d0c306def7a4c3813521a))
+
+## [1.16.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.5...v1.16.6) (2024-11-11)
+
+
+### Fixes
+
+* check usage calculation for MultiHTTP checks ([#984](https://github.com/grafana/synthetic-monitoring-app/issues/984)) ([c93de04](https://github.com/grafana/synthetic-monitoring-app/commit/c93de049c093c5cb1e6acc7ca59bcbcd651a3632))
+
+## [1.16.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.4...v1.16.5) (2024-10-21)
+
+
+### Features
+
+* improve delete private probe flow ([#951](https://github.com/grafana/synthetic-monitoring-app/issues/951)) ([8be4a9e](https://github.com/grafana/synthetic-monitoring-app/commit/8be4a9ea3803dd909f774300bc787c0639e7d555))
+
+
+### Fixes
+
+* check target tooptip ([#971](https://github.com/grafana/synthetic-monitoring-app/issues/971)) ([e5533fe](https://github.com/grafana/synthetic-monitoring-app/commit/e5533fe9980da251d1730ce8de5112748d09fc2a))
+* Update asc / desc reachability sorting ([#970](https://github.com/grafana/synthetic-monitoring-app/issues/970)) ([c281b77](https://github.com/grafana/synthetic-monitoring-app/commit/c281b7755055ae1958f4a758c448296e9e6aae6e))
+* update browser examples to use async check ([#972](https://github.com/grafana/synthetic-monitoring-app/issues/972)) ([c7494ca](https://github.com/grafana/synthetic-monitoring-app/commit/c7494ca1c3a7641d88bd2356493fa0e9649f3e43))
+
+
+### Miscellaneous Chores
+
+* Update Drone signature ([#968](https://github.com/grafana/synthetic-monitoring-app/issues/968)) ([a40b5e6](https://github.com/grafana/synthetic-monitoring-app/commit/a40b5e6b4066ff57f2fb1d76a4bc725289edeec7))
+
+## [1.16.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.3...v1.16.4) (2024-10-09)
+
+
+### Fixes
+
+* Publish script ([#966](https://github.com/grafana/synthetic-monitoring-app/issues/966)) ([b3a678b](https://github.com/grafana/synthetic-monitoring-app/commit/b3a678bb70b8a1d8343a74fb34520b97f67c9ca5))
+
+## [1.16.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.2...v1.16.3) (2024-10-09)
+
+
+### Miscellaneous Chores
+
+* Add git to publish step ([#962](https://github.com/grafana/synthetic-monitoring-app/issues/962)) ([cfafe1f](https://github.com/grafana/synthetic-monitoring-app/commit/cfafe1f363086de0b209109e16f671dc26e41119))
+* Change publish step image ([#964](https://github.com/grafana/synthetic-monitoring-app/issues/964)) ([d25ea9f](https://github.com/grafana/synthetic-monitoring-app/commit/d25ea9f808e735dcfe012493f00db6bb9bd151bd))
+
+## [1.16.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.1...v1.16.2) (2024-10-08)
+
+
+### Miscellaneous Chores
+
+* Fix publish version ([#960](https://github.com/grafana/synthetic-monitoring-app/issues/960)) ([145fb08](https://github.com/grafana/synthetic-monitoring-app/commit/145fb0842f9fce80d0f90b496166ec6c81dab8d8))
+
+## [1.16.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.0...v1.16.1) (2024-10-08)
+
+
+### Miscellaneous Chores
+
+* Fix release CI/CD ([#958](https://github.com/grafana/synthetic-monitoring-app/issues/958)) ([91ec8f9](https://github.com/grafana/synthetic-monitoring-app/commit/91ec8f972016b368128e62e774810a70d6bb225b))
+
+## [1.16.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.15.2...v1.16.0) (2024-10-07)
+
+
+### Features
+
+* extra validations for browser checks ([#942](https://github.com/grafana/synthetic-monitoring-app/issues/942)) ([1e3960d](https://github.com/grafana/synthetic-monitoring-app/commit/1e3960dcb3b8a6b983e1821f65356620f70cb38b))
+* set default timeout for browser checks to 1 min ([#945](https://github.com/grafana/synthetic-monitoring-app/issues/945)) ([e2be2da](https://github.com/grafana/synthetic-monitoring-app/commit/e2be2da8d4ef44dda965ff348f8386fbffcc3938))
+
+
+### Fixes
+
+* remove dynamic and unused data-fs-element attributes ([#941](https://github.com/grafana/synthetic-monitoring-app/issues/941)) ([d1b11ae](https://github.com/grafana/synthetic-monitoring-app/commit/d1b11aeccaf158b4fc25dd54e8a6845e37b125de))
+
+
+### Miscellaneous Chores
+
+* change browser checks to public preview status ([#952](https://github.com/grafana/synthetic-monitoring-app/issues/952)) ([26d0c5b](https://github.com/grafana/synthetic-monitoring-app/commit/26d0c5b8889b70bb98e2b9e2725a563e9afda74b))
+* Setup release-please ([#933](https://github.com/grafana/synthetic-monitoring-app/issues/933)) ([e7ebcd6](https://github.com/grafana/synthetic-monitoring-app/commit/e7ebcd6d13f82d639aef240053bed6efa124cb2c))
+* Tune release process ([#947](https://github.com/grafana/synthetic-monitoring-app/issues/947)) ([1b3f2c0](https://github.com/grafana/synthetic-monitoring-app/commit/1b3f2c0a54d62eb2a88093c9917d382cda001964))
+* update fillform example to use async check ([#949](https://github.com/grafana/synthetic-monitoring-app/issues/949)) ([91b00e5](https://github.com/grafana/synthetic-monitoring-app/commit/91b00e5c39726a1ba7312f01778193afdd84632b))
+
+## [1.15.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.15.1...v1.15.2) (2024-9-19)
+
+- Allow to disable browser checks in probe creation (https://github.com/grafana/synthetic-monitoring-app/pull/928)
+- Add browser checks validation (https://github.com/grafana/synthetic-monitoring-app/pull/930)
+- New version of browser dashboards (https://github.com/grafana/synthetic-monitoring-app/pull/931)
+- Add private preview badge to browser checks (https://github.com/grafana/synthetic-monitoring-app/pull/935)
+- Updated status badge appearance and organisation (https://github.com/grafana/synthetic-monitoring-app/pull/936)
+- Upgrade k6 types version to 0.53.0 (https://github.com/grafana/synthetic-monitoring-app/pull/937)
+- Set browser checks min frequency to 60 seconds (https://github.com/grafana/synthetic-monitoring-app/pull/938)
+- Add script examples specific to browser checks (https://github.com/grafana/synthetic-monitoring-app/pull/939)
+
+## [1.15.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.13...v1.15.1) (2024-8-26)
+
+- Bump axios from 1.6.7 to 1.7.4 (https://github.com/grafana/synthetic-monitoring-app/pull/909)
+- Revert the way we do datasource lookups (https://github.com/grafana/synthetic-monitoring-app/pull/911)
+- Fix typo in alerts error message (https://github.com/grafana/synthetic-monitoring-app/pull/913)
+- Obtain SM datasource by its type and not name to prevent errors when it’s been renamed (https://github.com/grafana/synthetic-monitoring-app/pull/921)
+- Revert sm:write permissions to be obtained froom org roles instead of datasource (https://github.com/grafana/synthetic-monitoring-app/pull/923)
+- Add new version of uptime calculation query and set it under FF  (https://github.com/grafana/synthetic-monitoring-app/pull/840/)
+- Hide grpc option in check cards when feature flag off (https://github.com/grafana/synthetic-monitoring-app/pull/922)
+
+## [1.14.13](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.11...v1.14.13) (2024-8-20)
+
+- Added datasource RBAC support in the plugin. The plugin now respects RBAC permissions for its datasources.
+- Fix a bug with saving existing checks with empty TLS configs
+- Fix a regression where the http checks follow redirects checkbox was missing
+- Prevent problematic characters from being added to job names (commas and single/double quotes)
+- Fix a bug with the assertions graph success / failure rate making the wrong query on scripted checks dashboard
+
+## [1.14.11](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.10...v1.14.11) (2024-7-25)
+
+- The check creation pages have been redesigned to be more user-friendly and intuitive. Every check now has five sections regardless of type.
+- Check types now have a parent group: Api Endpoint, Multi step and Scripted in the plugin UI.
+- Added restrictions when users have the viewer role.
+
+## [1.14.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.9...v1.14.10) (2024-7-10)
+
+- Upgrade scenes to version 5.1.0
+- Fix cursor type on cards without links
+- Improve non-initialized pages to provide section specific content
+- Enforce named exports
+- Avoid horizontal scrolling on check's dashboard
+- Add regression test for longitud validation fix
+- Add datasource to includes in order to provide support for loading synthentic monitoring appn assets from a CDN
+- Make loki query fetch range instead of instant logs to prevent timeout errors on ad-hoc tests
+
+## [1.14.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.8...v1.14.9) (2024-6-25)
+
+- Fix home dashboard when applying filters for error percentage, latency and error rate panels.
+- Fix validation for longitude field in custom probes creation form.
+
+## [1.14.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.7...v1.14.8) (2024-6-19)
+
+- Updated Grafana dependencies (@grafana/ui, @grafana/data, @grafana/runtime and @grafana/schema) to version 11.0.0
+- Updated Grafana dependency version in plugin configuration.
+- Added a PasswordField component to mask password inputs in the HTTP Auth section.
+- Added a link to the docs in the check’s custom labels section.
+
+## [1.14.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.6...v1.14.7) (2024-6-11)
+
+- Added test execution rate in the check list page. Added accompaying sort options to sort checks by ascending / descending execution rates
+- Fixed an issue where drilldowns are not working in the Scenes home dashboard
+- Changed the HTTP authentication type to a radio button pattern rather than multiple checkboxes
+- Changed probe form validation to zod schemas
+
+## [1.14.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.5...v1.14.6) (2024-6-5)
+
+- Removed public preview message from multihttp checks
+- Added url parameters to manage check list state, allowing deep linking to specific checks
+- Fix an issue on the homepage summary table where jobs were being duplicated
+- Fix text for SSL tooltip in Scenes dashboards
+- Fix alignment issues for labels and headers in the check creation forms
+- Fix terraform export for private probes
+- Fix wording for test executions in executions calculator
+- Changed check form validation to zod schemas
+
+## [1.14.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.4...v1.14.5) (2024-5-23)
+
+- Fix a bug with with SSL failing checks option not being respected in http checks
+
+## [1.14.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.3...v1.14.4) (2024-5-2)
+
+- Fix a bug with traceroute timeouts gettings the wrong default value
+
+## [1.14.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.2...v1.14.3) (2024-5-1)
+
+- Fix a bug where checks with a frequency of 1 hour showing incorrect uptime on the check dashboards
+- Fix a bug on the config page where the terraform export didn't have the dependencies it needed
+
+## [1.14.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.1...v1.14.2) (2024-4-30)
+
+- Make the check creation form responsive
+
+## [1.14.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.0...v1.14.1) (2024-4-29)
+
+- Temporarily disable responsive form layout that was causing issues with the scripted check editor
+
+## [1.14.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.4...v1.14.0) (2024-4-29)
+
+- Add a k6 based scripted check type
+- Updates design of the check creation form
+- Update documentation links
+- Only show query params for the HTTP check type
+- Fix the error log toggle to query by probe success instead of log error level
+
+## [1.13.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.3...v1.13.4) (2024-4-18)
+
+- Allow label limits to be configurable on a per tenant basis
+- Fix a bug where check tests could timeout before their configured timeout
+- Use average of http request duration for scripted check latency
+
+## [1.13.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.2...v1.13.3) (2024-4-11)
+
+- Fix a bug where the min step in dashboard queries was defaulting to 5 minutes unnecessarily
+
+## [1.13.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.1...v1.13.2) (2024-4-10)
+
+- Fix a bug where basic auth was always being submitted even when empty
+- Fix a few typos in the scripted check form
+- Clean up some old feature flags that were no longer used
+
+## [1.13.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.0...v1.13.1) (2024-4-2)
+
+- Fix a bug with empty search state and bulk selection
+- Fix a bug with the TCP IP version selection section of the check edit form
+
+## [1.13.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.0...v1.13.0) (2024-3-27)
+
+- Lengthen frequency time range to up to 1 hour
+
+## [1.12.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.9...v1.12.10) (2024-3-27)
+
+- Fix a bug where uptime and reachability were reversed in the check list
+- Redirect old scenes links to the updated model
+
+## [1.12.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.8...v1.12.9) (2024-3-21)
+
+- Fix a bug with bulk unselecting checks
+- Fix a bug that prevented querying for long time periods
+
+## [1.12.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.7...v1.12.8) (2024-3-13)
+
+- Update dashboards to indicate they are deprecated. Newer versions are available inside the app itself.
+- Fix a broken link to check creation when a user has no checks
+- Add script examples to scripted check UI
+
+## [1.12.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.6...v1.12.7) (2024-3-11)
+
+- Update dashboards to use timeseries instead of the deprecated graph panel
+- Fix a non-functional "Add check" button being visible for viewers.
+- Remove deprecated arrayVector
+- Add a probe region select
+
+## [1.12.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.5...v1.12.6) (2024-2-26)
+
+- Add alert annotations to the dashboards
+- Allow unlimited headres in HTTP checks
+- Improve navigation after check creation
+- Change the navigation model to use individual checks instead of dashboard dropdowns
+
+## [1.12.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.4...v1.12.5) (2024-1-25)
+
+- Revamp the MultiHTTP dashboard
+- Add a "Copy JSON" button to the dashboard menus so people can add charts to their own dashboards
+
+## [1.12.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.3...v1.12.4) (2023-11-09)
+
+- Bump up the max data points in the checks visualization view
+- Fix a bug when instances have no alert ruler datasource
+
+## [1.12.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.2...v1.12.3) (2023-11-07)
+
+- Rework the summary dashboard to provide a more useful overview of checks
+- Fix a bug with selecting individual URLs in the MultiHTTP scene
+- Add improved description tooltips for reachability and uptime
+- Improve error handling in the MultiHTTP form by scrolling to the first error and focusing inputs
+- Change default MultiHTTP timeout
+- Add additional context for assertion inputs
+- Include MultiHTTP in generated terraform config
+- Fix a bug with routing that caused flickers when the plugin had not yet been initialized
+
+## [1.12.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.1...v1.12.2) (2023-10-16)
+
+- Update docs on publisherToken provisioning
+- Persist check filters after they've been selected and fix some layout issues
+- Fix some layout issues in MultiHTTP checks
+- Add check testing to MultiHTTP checks
+
+## [1.12.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.0...v1.12.1) (2023-9-21)
+
+- Fix some issues with check type selection
+- Add a MultiHTTP usage calculator
+
+## [1.12.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.7...v1.12.0) (2023-9-20)
+
+- Allow all users to view alerts, and editors to edit them
+- Fix spacing issues in the test check modal
+- Update template dashboard JSON that was causing Grafana to crash on copy
+- Update MultiHTTP URL validation
+- Remove some old feature flags
+- Remove the deprecated check list visualization view
+
+## [1.11.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.6...v1.11.7) (2023-9-1)
+
+- Add filtering and search to the check list visualization view
+- Add enable/disable to the MultiHTTP form
+- Fix query param fields in MultiHTTP
+- Remove worldmap panel dependency
+
+## [1.11.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.5...v1.11.6) (2023-8-23)
+
+- Add an explore button to visualization menus
+- Encode/decode MultiHTTP request bodies in base64
+
+## [1.11.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.4...v1.11.5) (2023-8-14)
+
+- Add alerting levels to MultiHTTP
+- Fix error rate maps no filtering by probes
+- Make the check editor back button less confusing
+- Remove deprecated ArrayVector
+- Fix some URL validation
+- Various layout issues
+
+## [1.11.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.3...v1.11.4) (2023-7-19)
+
+- Fix an unhandled error in the traceroute nodegraph panel
+- Various tweaks to the MultiHTTP scene and form
+
+## [1.11.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.2...v1.11.3) (2023-7-10)
 
 - Fix an incorrect frequency value in the HTTP scene
 - Add an "edit check" button to all scenes
 
-# [1.11.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.1...v1.11.2) (2023-26-1)
+## [1.11.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.1...v1.11.2) (2023-26-1)
 
 - Fix broken dashboard link from summary page
 - Fix repeated "dashboard" on summary page
 
-# [1.11.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.0...v1.11.1) (2023-26-1)
+## [1.11.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.0...v1.11.1) (2023-26-1)
 
 - Add a multihttp scene behind a feature flag
 
-# [1.11.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.10.1...v1.11.0) (2023-6-1)
+## [1.11.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.10.1...v1.11.0) (2023-6-1)
 
 - Include some fixes for scenes
 - Fix some issues with identifying datasources when an instance is renamed
 - Replace the visualization list view with a scene
 - Remove legacy theming
 
-# [1.10.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.10.0...v1.10.1) (2023-4-26)
+## [1.10.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.10.0...v1.10.1) (2023-4-26)
 
 - Suppress an erroneous error toast in the alerting view
 - Add some testing for Terraform generation output
 
-# [1.10.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.36...v1.10.0) (2023-4-21)
+## [1.10.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.36...v1.10.0) (2023-4-21)
 
 - Add and release multi-http functionality behind feature flag
 - Add and release scenes based dashboards behind feature flag
 - Fix a bug with base64 encoding in TCP query/response
 - Update datasource query editor to include probes in traceroute queries
 
-# [1.9.36](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.35...v1.9.36) (2023-3-15)
+## [1.9.36](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.35...v1.9.36) (2023-3-15)
 
 - Update build tooling from grafana-toolkit to create-plugin
 
-# [1.9.35](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.34...v1.9.35) (2023-2-16)
+## [1.9.35](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.34...v1.9.35) (2023-2-16)
 
 - Fix a bug with rendering data in the node panel for traceroute checks
 
-# [1.9.34](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.33...v1.9.34) (2023-2-09)
+## [1.9.34](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.33...v1.9.34) (2023-2-09)
 
 - Fix a bug with the config page not rendering in cloud instances
 
-# [1.9.33](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.32...v1.9.33) (2023-2-07)
+## [1.9.33](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.32...v1.9.33) (2023-2-07)
 
 - Upgrade the Worldmap panel dependency
 
-# [1.9.32](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.31...v1.9.32) (2023-2-06)
+## [1.9.32](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.31...v1.9.32) (2023-2-06)
 
 - Fix a bug with the config page not rendering in cloud instances
 
-# [1.9.31](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.30...v1.9.31) (2023-1-13)
+## [1.9.31](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.30...v1.9.31) (2023-1-13)
 
 - Fix a bug where checks weren't refetched after bulk updating probes
 - Add some information on how to set up a private probe after creating a token
 - Show error state if validating the body of an HTTP HEAD request
 - Remove the legacy initialization flow
 
-# [1.9.30](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.29...v1.9.30) (2023-1-9)
+## [1.9.30](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.29...v1.9.30) (2023-1-9)
 
 - Remove deprecated initialization flow
 
-# [1.9.29](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.28...v1.9.29) (2023-1-4)
+## [1.9.29](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.28...v1.9.29) (2023-1-4)
 
 - Add proxy headers to HTTP checks
 
-# [1.9.28](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.27...v1.9.28) (2022-11-9)
+## [1.9.28](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.27...v1.9.28) (2022-11-9)
 
 - Update Alert URL for compatiblity with Grafana 9
 
-# [1.9.27](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.26...v1.9.27) (2022-11-8)
+## [1.9.27](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.26...v1.9.27) (2022-11-8)
 
 - Fix error message on non-traceroutes timeout field
 
-# [1.9.26](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.25...v1.9.26) (2022-11-2)
+## [1.9.26](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.25...v1.9.26) (2022-11-2)
 
 - Fix a duplicate button on the setup page
 
-# [1.9.25](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.24...v1.9.25) (2022-10-24)
+## [1.9.25](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.24...v1.9.25) (2022-10-24)
 
 - Support the new Grafana navigation setup
 
-# [1.9.24](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.23...v1.9.24) (2022-10-11)
+## [1.9.24](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.23...v1.9.24) (2022-10-11)
 
 - Fix a bug with dashboard redirects that were causing them to lose query params
 
-# [1.9.23](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.22...v1.9.23) (2022-10-5)
+## [1.9.23](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.22...v1.9.23) (2022-10-5)
 
 - Bump Grafana dependencies to version 9
 
-# [1.9.22](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.21...v1.9.22) (2022-9-15)
+## [1.9.22](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.21...v1.9.22) (2022-9-15)
 
 - Update worldmap panel dependency
 
-# [1.9.21](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.20...v1.9.21) (2022-8-10)
+## [1.9.21](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.20...v1.9.21) (2022-8-10)
 
 - Update link to alerting UI
 
-# [1.9.20](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.19...v1.9.20) (2022-8-2)
+## [1.9.20](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.19...v1.9.20) (2022-8-2)
 
 - Make sure 100% is never rendered as 100.0%
 
-# [1.9.19](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.18...v1.9.19) (2022-6-21)
+## [1.9.19](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.18...v1.9.19) (2022-6-21)
 
 - Fix a bug with some promql queries that could result in values over 100%
 
-# [1.9.18](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.17...v1.9.18) (2022-6-21)
+## [1.9.18](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.17...v1.9.18) (2022-6-21)
 
 - Fix a bug with settting default alert rules in Grafana v9
 
-# [1.9.17](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.16...v1.9.17) (2022-6-9)
+## [1.9.17](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.16...v1.9.17) (2022-6-9)
 
 - Handles a breaking change in the alerting api for Grafana v9
 
-# [1.9.16](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.15...v1.9.16) (2022-6-3)
+## [1.9.16](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.15...v1.9.16) (2022-6-3)
 
 - Adds a more helpful error message when probe deletion fails
 
-# [1.9.15](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.14...v1.9.15) (2022-4-28)
+## [1.9.15](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.14...v1.9.15) (2022-4-28)
 
 - Fixes a routing issue where the unprovisioned plugin could get stuck in an infinite loop
 - Fixes a routing issue where the plugin could prevent navigation to other parts of Grafana
 
-# [1.9.14](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.13...v1.9.14) (2022-4-15)
+## [1.9.14](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.13...v1.9.14) (2022-4-15)
 
 - Fixes a bug where there alerting tab could end up in a disabled state when it shouldn't
 
-# [1.9.13](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.12...v1.9.13) (2022-3-29)
+## [1.9.13](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.12...v1.9.13) (2022-3-29)
 
 ### Bug fixes
 
 - Fixes reachability queries that could sometimes be over 100% for long time windows
 - Hides dashboard update modal from users that don't have permissions to update dashboards
 
-# [1.9.12](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.11...v1.9.12) (2022-3-16)
+## [1.9.12](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.11...v1.9.12) (2022-3-16)
 
 ### Bug fixes
 
 - Dashboard maps weren't displaying thresholds correctly
 - Show custom alert thresholds in the check editor form
 
-# [1.9.11](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.10...v1.9.11) (2022-3-3)
+## [1.9.11](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.10...v1.9.11) (2022-3-3)
 
 ### Bug fixes
 
 - Fix broken dashboard redirect logic
 
-# [1.9.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.9...v1.9.10) (2022-2-16)
+## [1.9.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.9...v1.9.10) (2022-2-16)
 
 ### Bug fixes
 
 - Use datasource UIDs when creating dashboards instead of names
 - Fix a potential infinite routing loop when initializing on prem
 
-# [1.9.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.8...v1.9.9) (2022-2-04)
+## [1.9.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.8...v1.9.9) (2022-2-04)
 
-## Features
+### Features
 
 - Rearranged checklist filters under a central dropdown
 
-# [1.9.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.7...v1.9.8) (2022-2-01)
+## [1.9.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.7...v1.9.8) (2022-2-01)
 
-# [1.9.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.6...v1.9.7) (2022-1-25)
+## [1.9.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.6...v1.9.7) (2022-1-25)
 
-## Features
+### Features
 
 - Adds a map to the probe edit page to visualize longitude & latitude
 
-# [1.9.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.5...v1.9.6) (2022-1-21)
+## [1.9.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.5...v1.9.6) (2022-1-21)
 
 ### Features
 
 - Increase the maximum quantity of labels per check to 10.
 
-# [1.9.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.4...v1.9.5) (2022-1-21)
+## [1.9.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.4...v1.9.5) (2022-1-21)
 
 ### Bug fixes
 
 - Fix a race condition that prevented values from showing up when navigating to the edit check form
 
-# [1.9.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.3...v1.9.4) (2022-1-19)
+## [1.9.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.3...v1.9.4) (2022-1-19)
 
 ### Bug fixes
 
@@ -194,25 +607,25 @@
 
 - Include traceroute checks in the Terraform config export
 
-# [1.9.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.2...v1.9.3) (2022-1-10)
+## [1.9.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.2...v1.9.3) (2022-1-10)
 
 ### Bug fixes
 
 - Gracefully handle inability to connect to API
 
-# [1.9.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.8.1...v1.9.2) (2022-1-06)
+## [1.9.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.8.1...v1.9.2) (2022-1-06)
 
 ### Features
 
 - Added the ability to bulk edit probes for checks
 
-# [1.8.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.8.0...v1.8.1) (2022-1-04)
+## [1.8.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.8.0...v1.8.1) (2022-1-04)
 
 ### Bug Fixes
 
 - Update the README with additional configuration details
 
-# [1.8.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.7.0...v1.8.0) (2022-1-04)
+## [1.8.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.7.0...v1.8.0) (2022-1-04)
 
 ### Features
 
@@ -224,68 +637,68 @@
 - Use the updated timeseries panel in the summary dashboard
 - Rename the DNS dashboard to align with the other dashboards
 
-# [1.7.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.61...v1.7.0) (2021-12-01)
+## [1.7.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.61...v1.7.0) (2021-12-01)
 
 ### Features
 
 - Add the ability to export checks and probes as terraform config from the plugin config page
 - Add a button to generate a new API key in the plugin config page
 
-# [1.6.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.6...v1.6.0) (2021-11-17)
+## [1.6.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.6...v1.6.0) (2021-11-17)
 
 ### Features
 
 - Add traceroute check type
 
-# [1.5.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.5...v1.5.6) (2021-11-15)
+## [1.5.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.5...v1.5.6) (2021-11-15)
 
 ### Bug Fixes
 
 - Add data points per minute to usage calculator
 
-# [1.5.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.4...v1.5.5) (2021-10-29)
+## [1.5.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.4...v1.5.5) (2021-10-29)
 
 ### Features
 
 - Mark deprecated probes as such in check editor. Prevent adding deprecated probes to checks.
 
-# [1.5.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.2...v1.5.3) (2021-09-20)
+## [1.5.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.2...v1.5.3) (2021-09-20)
 
 ### Bug Fixes
 
 - Fix a dashboard config error
 
-# [1.5.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.3.3...v1.5.2) (2021-09-20)
+## [1.5.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.3.3...v1.5.2) (2021-09-20)
 
 ### Bug Fixes
 
 - make homepage usage breakpoints smaller ([#367](https://github.com/grafana/synthetic-monitoring-app/issues/367)) ([d157abe](https://github.com/grafana/synthetic-monitoring-app/commit/d157abe6fdb53a1aefcfba81cc08270ab9a9e735))
 
-# [1.5.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.3.3...v1.6.0) (2021-09-14)
+## [1.5.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.3.3...v1.6.0) (2021-09-14)
 
 ### Bug Fixes
 
 - config setup button was routing to a 404 ([#365](https://github.com/grafana/synthetic-monitoring-app/issues/365)) ([a08a9c8](https://github.com/grafana/synthetic-monitoring-app/commit/a08a9c8ac335d83bada5ee23a081be4f3fbee4fd))
 
-# [1.5.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.3.3...v1.5.0) (2021-09-13)
+## [1.5.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.3.3...v1.5.0) (2021-09-13)
 
 ### Features
 
 - add a homepage ([625beb9](https://github.com/grafana/synthetic-monitoring-app/commit/625beb9a1bfad4e504d48791aef6417354195353))
 
-# [1.4.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.3.3...v1.4.0) (2021-09-08)
+## [1.4.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.3.3...v1.4.0) (2021-09-08)
 
 ### Features
 
 - Add beta feature traceroute behind a feature flag ([#245](https://github.com/grafana/synthetic-monitoring-app/issues/245)) ([89ab9b1](https://github.com/grafana/synthetic-monitoring-app/commit/89ab9b1427734f88f8590bb15f59b786f02bed11))
 
-# [1.3.2](https://github.com/grafana/synthetic-monitoring-app/compare/1.3.1...1.3.2) (2021-09-08)
+## [1.3.2](https://github.com/grafana/synthetic-monitoring-app/compare/1.3.1...1.3.2) (2021-09-08)
 
 ### Bug Fixes
 
 - check type selector should be disabled on edit ([#360](https://github.com/grafana/synthetic-monitoring-app/issues/360)) ([dda165e](https://github.com/grafana/synthetic-monitoring-app/commit/dda165e6187370d2726d4db0e31b8af2fe5bfa36))
 
-# [1.3.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.2.30...v1.3.0) (2021-08-27)
+## [1.3.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.2.30...v1.3.0) (2021-08-27)
 
 ### Bug Fixes
 

@@ -1,58 +1,74 @@
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, ReactNode } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { GrafanaTheme2 } from '@grafana/data';
 
 interface Props {
+  className?: string;
   isOpen?: boolean;
-  label: string | JSX.Element;
-  loading?: boolean;
-  collapsible?: boolean;
-  onToggle?: (isOpen: boolean) => void;
+  label: ReactNode;
+  onClick?: (open: boolean) => void;
+  'data-fs-element'?: string;
 }
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  container: css`
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
-    margin-bottom: 0;
-    padding: ${theme.spacing(2)} 0;
-  `,
-  header: css`
-    display: flex;
-    align-items: center;
-    transition: all 0.1s linear;
-    cursor: pointer;
-  `,
-  headerExpanded: css`
-    padding-bottom: ${theme.spacing(1)};
-  `,
-  headerIcon: css`
-    margin-right: ${theme.spacing(1)};
-  `,
-  label: css`
-    margin-right: ${theme.spacing(1)};
-    font-size: ${theme.typography.h4.fontSize};
-  `,
-  body: css`
-    padding-top: ${theme.spacing(1)};
-  `,
-  hidden: css`
-    display: none;
-  `,
-});
-
-export const Collapse = ({ isOpen, label, children, onToggle, ...props }: PropsWithChildren<Props>) => {
+export const Collapse = ({
+  className,
+  isOpen,
+  label,
+  children,
+  onClick,
+  'data-fs-element': dataFsElement,
+  ...props
+}: PropsWithChildren<Props>) => {
+  const [isOpenState, setIsOpenState] = React.useState(isOpen);
   const styles = useStyles2(getStyles);
 
   return (
-    <div className={cx(['panel-container', styles.container])}>
-      <div className={styles.header} onClick={() => onToggle && onToggle(Boolean(isOpen))}>
+    <div className={cx(styles.container, className)} {...props}>
+      <button
+        aria-expanded={isOpenState}
+        className={styles.header}
+        onClick={() => {
+          setIsOpenState(!isOpenState);
+          onClick?.(!isOpenState);
+        }}
+        type="button"
+        data-fs-element={dataFsElement}
+      >
         <div className={styles.label}>{label}</div>
-        <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
-      </div>
-      <div className={cx(styles.body, { [styles.hidden]: !isOpen })}>{children}</div>
+        <Icon name={isOpenState ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
+      </button>
+      <div className={cx(styles.body, { [styles.hidden]: !isOpenState })}>{children}</div>
     </div>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  container: css({
+    borderTop: `1px solid ${theme.components.panel.borderColor}`,
+    borderRadius: theme.shape.borderRadius(2),
+  }),
+  header: css({
+    background: `none`,
+    border: `none`,
+    display: `flex`,
+    alignItems: `center`,
+    transition: `all 0.1s linear`,
+    padding: theme.spacing(2, 0),
+    zIndex: 1,
+    width: `100%`,
+  }),
+  headerIcon: css({
+    marginRight: theme.spacing(1),
+  }),
+  label: css({
+    marginRight: theme.spacing(1),
+    fontSize: theme.typography.h4.fontSize,
+  }),
+  body: css({
+    margin: theme.spacing(1, 0, 2),
+  }),
+  hidden: css({
+    display: `none`,
+  }),
+});

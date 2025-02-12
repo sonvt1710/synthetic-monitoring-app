@@ -1,61 +1,33 @@
-import { QueryVariable } from '@grafana/scenes';
-import { DataSourceRef, VariableRefresh } from '@grafana/schema';
+import { CustomVariable, QueryVariable } from '@grafana/scenes';
+import { DataSourceRef, VariableHide, VariableRefresh } from '@grafana/schema';
+
 import { Check, CheckType } from 'types';
 
-export function getVariables(checkType: CheckType, metrics: DataSourceRef, checks: Check[]) {
+export function getVariables(checkType: CheckType, metrics: DataSourceRef, check: Check) {
   const probe = new QueryVariable({
     includeAll: true,
     allValue: '.*',
     defaultToAll: true,
     isMulti: true,
     name: 'probe',
-    query: { query: `label_values(sm_check_info{check_name="${checkType}"},probe)` },
+    query: `label_values(sm_check_info{check_name="${checkType}"},probe)`,
     refresh: VariableRefresh.onDashboardLoad,
     datasource: metrics,
   });
 
-  const job = new QueryVariable({
+  const job = new CustomVariable({
     name: 'job',
-    label: 'Job',
-    refresh: VariableRefresh.onDashboardLoad,
-    query: { query: `label_values(sm_check_info{check_name="${checkType}", probe=~"$probe"},job)` },
-
-    datasource: metrics,
+    query: check.job,
+    value: check.job,
+    text: check.job,
+    hide: VariableHide.hideVariable,
   });
-
-  // This is to ensure the value of the job variable matches a check with correct check type
-  job.addActivationHandler(() => {
-    const value = job.getValue();
-    if (value) {
-      const found = checks.find((check) => check.job === value);
-      if (!found) {
-        job.changeValueTo(checks[0].job);
-        instance.changeValueTo(checks[0].target);
-      }
-    }
-    const sub = job.subscribeToState(({ value, loading }) => {
-      if (!loading) {
-        const found = checks.find((check) => check.job === value);
-        if (!found) {
-          job.changeValueTo(checks[0].job);
-          instance.changeValueTo(checks[0].target);
-        }
-      }
-    });
-    return () => {
-      sub.unsubscribe();
-    };
-  });
-
-  const instance = new QueryVariable({
+  const instance = new CustomVariable({
     name: 'instance',
-    label: 'Instance',
-    refresh: VariableRefresh.onDashboardLoad,
-    query: {
-      query: `label_values(sm_check_info{check_name="${checkType}", job="$job", probe=~"$probe"},instance)`,
-    },
-    datasource: metrics,
+    query: check.target,
+    value: check.target,
+    text: check.target,
+    hide: VariableHide.hideVariable,
   });
-
   return { probe, job, instance };
 }

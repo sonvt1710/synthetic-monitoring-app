@@ -1,8 +1,9 @@
 import { createContext } from 'react';
 import { FeatureToggles, urlUtil } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { FeatureName } from 'types';
 import { isArray } from 'lodash';
+
+import { FeatureName } from 'types';
 
 export interface FeatureFlagContextValue {
   featureToggles: FeatureToggles;
@@ -11,9 +12,6 @@ export interface FeatureFlagContextValue {
 
 export function isFeatureEnabled(name: FeatureName) {
   // Override traceroute feature flag until we're sure we don't need it anymore
-  if (name === FeatureName.Traceroute) {
-    return true;
-  }
   const featuresParam = urlUtil.getUrlSearchParams()['features'];
   let isEnabledThroughQueryParam = false;
   if (isArray(featuresParam)) {

@@ -1,4 +1,4 @@
-import { getRandomProbes } from 'utils';
+import { getRandomProbes, pascalCaseToSentence } from 'utils';
 
 it('gets random probes', async () => {
   const probes = [11, 23, 5, 5212, 43, 3, 4, 6];
@@ -12,4 +12,26 @@ it('gets random probes', async () => {
 
   const random2 = getRandomProbes(probes, 2);
   expect(random2.length).toBe(2);
+});
+
+describe(`pascalCaseToSentence`, () => {
+  it(`converts camelCase to sentence`, () => {
+    expect(pascalCaseToSentence('camelCaseToSentence')).toBe('Camel Case To Sentence');
+  });
+
+  it(`converts pascalCase to sentence`, () => {
+    expect(pascalCaseToSentence('PascalCaseToSentence')).toBe('Pascal Case To Sentence');
+  });
+
+  it(`doesn't convert values which are all uppercase`, () => {
+    expect(pascalCaseToSentence('ALLUPPERCASE')).toBe('ALLUPPERCASE');
+  });
+
+  it(`doesn't convert values which are all lowercase`, () => {
+    expect(pascalCaseToSentence('alllowercase')).toBe('alllowercase');
+  });
+
+  it(`doesn't convert values which already have spaces`, () => {
+    expect(pascalCaseToSentence('Has Spaces')).toBe('Has Spaces');
+  });
 });

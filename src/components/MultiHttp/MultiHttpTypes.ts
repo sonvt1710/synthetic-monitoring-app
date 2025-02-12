@@ -1,4 +1,4 @@
-import { MultiHttpAssertionType } from 'types';
+import { HttpMethod, Label, MultiHttpAssertionType } from 'types';
 
 export type MultiHttpVariable = {
   type: number;
@@ -7,38 +7,47 @@ export type MultiHttpVariable = {
   attribute?: string;
 };
 
-export type HeaderType = {
-  name: 'Accept' | 'Accept-Charset' | 'Authorization' | 'Cache-Control' | 'Content-Type';
-  value: string;
-};
-
-export type QueryParams = {
-  name: string;
-  value: string;
-};
-
-export type RequestMethods = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS' | 'HEAD';
+export type RequestMethods = HttpMethod;
 export type RequestProps = {
   method: RequestMethods;
   url: string;
   body?: MultiHttpRequestBody;
-  headers?: HeaderType[];
-  queryString?: QueryParams[];
+  headers?: Label[];
+  queryFields?: Label[];
   postData?: {
     mimeType: string;
     text: string;
   };
 };
 
-export type KeyTypes = 'url' | 'body' | 'method' | 'headers' | 'queryString' | 'postData';
+export type KeyTypes = 'url' | 'body' | 'method' | 'headers' | 'queryFields' | 'postData';
 
-export interface Assertion {
-  type: MultiHttpAssertionType;
-  subject?: AssertionSubjectVariant;
-  expression?: string;
-  condition?: AssertionConditionVariant;
-  value?: string;
+export interface AssertionText {
+  condition: AssertionConditionVariant;
+  subject: AssertionSubjectVariant;
+  type: MultiHttpAssertionType.Text;
+  value: string;
 }
+
+export interface AssertionJsonPathValue {
+  condition: AssertionConditionVariant;
+  expression: string;
+  type: MultiHttpAssertionType.JSONPathValue;
+  value: string;
+}
+
+export interface AssertionJsonPath {
+  expression: string;
+  type: MultiHttpAssertionType.JSONPath;
+}
+
+export interface AssertionRegex {
+  expression: string;
+  type: MultiHttpAssertionType.Regex;
+  subject: AssertionSubjectVariant;
+}
+
+export type Assertion = AssertionText | AssertionJsonPathValue | AssertionJsonPath | AssertionRegex;
 
 export interface MultiHttpRequestBody {
   contentType: string;
@@ -49,17 +58,17 @@ export interface MultiHttpRequestBody {
 export interface MultiHttpEntry {
   variables?: MultiHttpVariable[];
   request: RequestProps;
-  checks: Assertion[];
+  checks?: Assertion[];
 }
 
 export enum AssertionSubjectVariant {
-  ResponseBody = 0,
+  ResponseBody = 3,
   ResponseHeaders = 1,
   HttpStatusCode = 2,
 }
 
 export enum AssertionConditionVariant {
-  Contains = 0,
+  Contains = 6,
   NotContains = 1,
   Equals = 2,
   StartsWith = 3,

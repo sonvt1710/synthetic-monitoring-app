@@ -1,26 +1,63 @@
 import {
+  arrayToDataFrame,
   DataFrame,
   DataQueryRequest,
   DataQueryResponse,
   DataSourceApi,
   DataSourceInstanceSettings,
-  MetricFindValue,
   ScopedVars,
-  arrayToDataFrame,
+  TimeRange,
 } from '@grafana/data';
-
-import { CheckInfo, QueryType, SMOptions, SMQuery } from './types';
-
-import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
+import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
+
+import { Check, CheckAlertDraft, Probe, ThresholdSettings } from '../types';
+import {
+  AccessTokenResponse,
+  AddCheckResult,
+  type AddProbeResult,
+  AdHocCheckResponse,
+  CheckAlertsResponse,
+  CheckInfoResult,
+  DeleteCheckResult,
+  DeleteProbeResult,
+  ListCheckResult,
+  ListProbeResult,
+  ListTenantLimitsResponse,
+  ListTenantSettingsResult,
+  LogsQueryResponse,
+  type ResetProbeTokenResult,
+  TenantResponse,
+  UpdateCheckResult,
+  type UpdateProbeResult,
+  type UpdateTenantSettingsResult,
+} from './responses.types';
+import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
-import { Check, HostedInstance, Probe } from '../types';
+
+import { ExtendedBulkUpdateCheckResult } from '../data/useChecks';
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   constructor(public instanceSettings: DataSourceInstanceSettings<SMOptions>) {
     super(instanceSettings);
+  }
+
+  async fetchAPI<T>(url: BackendSrvRequest['url'], options?: Omit<BackendSrvRequest, 'url'>) {
+    const response = await firstValueFrom(
+      getBackendSrv().fetch<T>({
+        method: options?.method ?? 'GET',
+        url,
+        ...options,
+      })
+    ).catch((error: unknown) => {
+      // We could log the error here
+
+      throw error;
+    });
+
+    return response?.data as T;
   }
 
   interpolateVariablesInQueries(queries: SMQuery[], scopedVars: {} | ScopedVars): SMQuery[] {
@@ -51,6 +88,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return interpolated;
   }
 
+  // these are assumptions which may not hold true in all cases
+  // see https://github.com/grafana/synthetic-monitoring-app/pull/911 for more details
   getMetricsDS() {
     const info = this.instanceSettings.jsonData.metrics;
     const ds = findLinkedDatasource({ ...info, uid: 'grafanacloud-metrics' });
@@ -115,6 +154,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         data.push(copy);
       } else if (query.queryType === QueryType.Traceroute) {
         const logsUrl = this.getLogsDS()?.url;
+
         if (!logsUrl) {
           return {
             data: [],
@@ -170,234 +210,154 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return allProbes;
   }
 
-  async getCheckInfo(): Promise<CheckInfo> {
-    return getBackendSrv()
-      .fetch({
-        method: 'GET',
-        url: `${this.instanceSettings.url}/sm/checks/info`,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data as CheckInfo;
-      });
+  async getCheckInfo() {
+    return this.fetchAPI<CheckInfoResult>(`${this.instanceSettings.url}/sm/checks/info`);
+  }
+
+  async queryLogs(expr: string, range: TimeRange) {
+    return this.fetchAPI<LogsQueryResponse>(`/api/ds/query`, {
+      method: 'POST',
+      data: {
+        queries: [
+          {
+            refId: 'A',
+            expr,
+            queryType: 'range',
+            datasource: this.instanceSettings.jsonData.logs,
+            intervalMs: 2000,
+            maxDataPoints: 1779,
+          },
+        ],
+        from: String(range.from.unix() * 1000),
+        to: String(range.to.unix() * 1000),
+      },
+    }).then((data) => data.results.A.frames);
   }
 
   //--------------------------------------------------------------------------------
   // PROBES
   //--------------------------------------------------------------------------------
 
-  async listProbes(): Promise<Probe[]> {
-    return getBackendSrv()
-      .fetch({
-        method: 'GET',
-        url: `${this.instanceSettings.url}/sm/probe/list`,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async listProbes() {
+    return this.fetchAPI<ListProbeResult>(`${this.instanceSettings.url}/sm/probe/list`);
   }
 
-  async metricFindQuery(query: string, options?: any): Promise<MetricFindValue[]> {
-    const checks = await this.listChecks();
-    const metricFindValues = checks.map<MetricFindValue>((check) => {
-      const value = `${check.job}: ${check.target}`;
-      return {
-        value,
-        text: value,
-      };
+  async addProbe(probe: Probe) {
+    return this.fetchAPI<AddProbeResult>(`${this.instanceSettings.url}/sm/probe/add`, {
+      method: 'POST',
+      data: probe,
     });
-    return metricFindValues;
   }
 
-  async addProbe(probe: Probe): Promise<any> {
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/probe/add`,
-        data: probe,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async updateProbe(probe: Probe) {
+    return this.fetchAPI<UpdateProbeResult>(`${this.instanceSettings.url}/sm/probe/update`, {
+      method: 'POST',
+      data: probe,
+    });
   }
 
-  async deleteProbe(id: number): Promise<any> {
-    return getBackendSrv()
-      .fetch({
-        method: 'DELETE',
-        url: `${this.instanceSettings.url}/sm/probe/delete/${id}`,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async resetProbeToken(probe: Probe) {
+    return this.fetchAPI<ResetProbeTokenResult>(`${this.instanceSettings.url}/sm/probe/update?reset-token=true`, {
+      method: 'POST',
+      data: probe,
+    });
   }
 
-  async updateProbe(probe: Probe): Promise<any> {
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/probe/update`,
-        data: probe,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
-  }
-
-  async resetProbeToken(probe: Probe): Promise<any> {
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/probe/update?reset-token=true`,
-        data: probe,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async deleteProbe(id: number) {
+    return this.fetchAPI<DeleteProbeResult>(`${this.instanceSettings.url}/sm/probe/delete/${id}`, { method: 'DELETE' });
   }
 
   //--------------------------------------------------------------------------------
   // CHECKS
   //--------------------------------------------------------------------------------
 
-  async listChecks(): Promise<Check[]> {
-    return getBackendSrv()
-      .fetch({
-        method: 'GET',
-        url: `${this.instanceSettings.url}/sm/check/list`,
-      })
-      .toPromise()
-      .then((res: any) => (Array.isArray(res.data) ? res.data : []));
+  async listChecks() {
+    return this.fetchAPI<ListCheckResult>(`${this.instanceSettings.url}/sm/check/list`);
   }
 
-  async getCheck(checkId: number): Promise<Check> {
-    return getBackendSrv().get(`${this.instanceSettings.url}/sm/check/${checkId}`);
+  async getCheck(checkId: number) {
+    return this.fetchAPI<Check>(`${this.instanceSettings.url}/sm/check/${checkId}`);
   }
 
-  async testCheck(check: Check): Promise<any> {
-    if (check.timeout > 2500) {
-      check.timeout = 2500;
-    }
-
-    const randomSelection = getRandomProbes(check.probes, 5);
-    check.probes = randomSelection;
-
-    return firstValueFrom(
-      getBackendSrv().fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/check/adhoc`,
-        data: check,
-      })
-    ).then((res: any) => {
-      return res.data;
+  async testCheck(check: Check) {
+    const payload = getTestPayload(check);
+    return this.fetchAPI<AdHocCheckResponse>(`${this.instanceSettings.url}/sm/check/adhoc`, {
+      method: 'POST',
+      data: payload,
     });
   }
 
-  async addCheck(check: Check): Promise<any> {
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/check/add`,
-        data: check,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async addCheck(check: Check) {
+    return this.fetchAPI<AddCheckResult>(`${this.instanceSettings.url}/sm/check/add`, {
+      method: 'POST',
+      data: check,
+    });
   }
 
-  async deleteCheck(id: number): Promise<any> {
-    return getBackendSrv()
-      .fetch({
-        method: 'DELETE',
-        url: `${this.instanceSettings.url}/sm/check/delete/${id}`,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async deleteCheck(id: number) {
+    return this.fetchAPI<DeleteCheckResult>(`${this.instanceSettings.url}/sm/check/delete/${id}`, { method: 'DELETE' });
   }
 
-  async updateCheck(check: Check): Promise<any> {
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/check/update`,
-        data: check,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async updateCheck(check: Check) {
+    return this.fetchAPI<UpdateCheckResult>(`${this.instanceSettings.url}/sm/check/update`, {
+      method: 'POST',
+      data: check,
+    });
   }
 
-  async bulkUpdateChecks(checks: Check[]): Promise<boolean> {
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/check/update/bulk`,
-        data: checks,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async bulkUpdateChecks(checks: Check[]) {
+    return this.fetchAPI<ExtendedBulkUpdateCheckResult>(`${this.instanceSettings.url}/sm/check/update/bulk`, {
+      method: 'POST',
+      data: checks,
+    });
   }
 
-  async getTenant(): Promise<any> {
-    return getBackendSrv()
-      .fetch({ method: 'GET', url: `${this.instanceSettings.url}/sm/tenant` })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async getTenant() {
+    return this.fetchAPI<TenantResponse>(`${this.instanceSettings.url}/sm/tenant`);
   }
 
-  async getTenantSettings(): Promise<any> {
-    return getBackendSrv()
-      .fetch({ method: 'GET', url: `${this.instanceSettings.url}/sm/tenant/settings` })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async getTenantLimits() {
+    return this.fetchAPI<ListTenantLimitsResponse>(`${this.instanceSettings.url}/sm/tenant/limits`);
   }
 
-  // do type
-  async updateTenantSettings(settings: any): Promise<any> {
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/tenant/settings/update`,
-        data: {
-          ...settings,
-        },
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async getTenantSettings() {
+    return this.fetchAPI<ListTenantSettingsResult>(`${this.instanceSettings.url}/sm/tenant/settings`);
+  }
+
+  async updateTenantSettings(settings: { thresholds: ThresholdSettings }) {
+    return this.fetchAPI<UpdateTenantSettingsResult>(`${this.instanceSettings.url}/sm/tenant/settings/update`, {
+      method: 'POST',
+      data: {
+        ...settings,
+      },
+    });
   }
 
   async disableTenant(): Promise<any> {
     const tenant = await this.getTenant();
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/tenant/update`,
-        data: {
-          ...tenant,
-          status: 1,
-        },
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+    return this.fetchAPI(`${this.instanceSettings.url}/sm/tenant/update`, {
+      method: 'POST',
+      data: {
+        ...tenant,
+        status: 1,
+      },
+    });
+  }
+
+  //--------------------------------------------------------------------------------
+  // ALERTS PER CHECK
+  //--------------------------------------------------------------------------------
+  // Note: this endpoints are not yet released. The prototype can be seen here https://github.com/grafana/synthetic-monitoring-api/pull/992
+
+  async listAlertsForCheck(checkId: number) {
+    return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`);
+  }
+
+  async updateAlertsForCheck(alerts: CheckAlertDraft[], checkId: number) {
+    return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`, {
+      method: 'POST',
+      data: { alerts },
+    });
   }
 
   //--------------------------------------------------------------------------------
@@ -451,32 +411,11 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     });
   }
 
-  async getViewerToken(apiToken: string, instance: HostedInstance): Promise<string> {
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/register/viewer-token`,
-        data: {
-          apiToken,
-          id: instance.id,
-          type: instance.type,
-        },
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data?.token;
-      });
-  }
-
   async createApiToken(): Promise<string> {
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/token/create`,
-        data: {},
-      })
-      .toPromise()
-      .then((res: any) => res.data?.token);
+    return this.fetchAPI<AccessTokenResponse>(`${this.instanceSettings.url}/sm/token/create`, {
+      method: 'POST',
+      data: {},
+    }).then((data) => data.token);
   }
 
   //--------------------------------------------------------------------------------
@@ -496,4 +435,21 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       message: 'unable to connect',
     };
   }
+}
+
+function getTestPayload(check: Check) {
+  const randomSelection = getRandomProbes(check.probes, 5);
+
+  if (check.id) {
+    const { id, ...rest } = check;
+    return {
+      ...rest,
+      probes: randomSelection,
+    };
+  }
+
+  return {
+    ...check,
+    probes: randomSelection,
+  };
 }

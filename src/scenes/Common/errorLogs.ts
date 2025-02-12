@@ -1,5 +1,7 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(logs: DataSourceRef) {
   return new SceneQueryRunner({
@@ -14,7 +16,7 @@ function getQueryRunner(logs: DataSourceRef) {
 }
 
 export function getErrorLogs(logs: DataSourceRef) {
-  return new VizPanel({
+  return new ExplorablePanel({
     pluginId: 'logs',
     title: 'Logs for failed checks: $probe ⮕ $job / $instance',
     $data: getQueryRunner(logs),

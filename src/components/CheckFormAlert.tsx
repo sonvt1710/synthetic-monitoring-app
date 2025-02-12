@@ -1,37 +1,26 @@
-import React, { FC, useState } from 'react';
-import { css } from '@emotion/css';
+import React from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Select, useStyles2 } from '@grafana/ui';
-import { Collapse } from './Collapse';
-import { Controller, useFormContext } from 'react-hook-form';
+import { css } from '@emotion/css';
+
+import { CheckFormValues } from 'types';
+
+import { useCheckFormContext } from './CheckForm/CheckFormContext/CheckFormContext';
 import { ALERT_SENSITIVITY_OPTIONS } from './constants';
 
-interface Props {
-  checkId?: number;
-}
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  marginBottom: css`
-    margin-bottom: ${theme.spacing(2)};
-  `,
-  link: css`
-    text-decoration: underline;
-  `,
-});
-
-export const CheckFormAlert: FC<Props> = () => {
-  const [showAlerting, setShowAlerting] = useState(false);
+export const CheckFormAlert = () => {
   const styles = useStyles2(getStyles);
-  const { watch } = useFormContext();
+  const { control, watch } = useFormContext<CheckFormValues>();
+  const { isFormDisabled } = useCheckFormContext();
   const alertSensitivity = watch('alertSensitivity');
 
-  const isCustomSensitivity = !Boolean(
-    ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity.value)
-  );
+  const isCustomSensitivity = !Boolean(ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity));
 
   return (
-    <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
+    <>
       <div className={styles.marginBottom}>
+        <h3 className={styles.title}>Alert sensitivity</h3>
         <p>
           Synthetic Monitoring provides some default alert rules via Cloud Alerting. By selecting an alert sensitivity,
           the metrics this check publishes will be associated with a Cloud Alerting rule. Default rules can be created
@@ -47,20 +36,50 @@ export const CheckFormAlert: FC<Props> = () => {
         </p>
         <p>Tip: adding multiple probes can help to prevent alert flapping for less frequent checks</p>
       </div>
-      <Field label="Select alert sensitivity" disabled={isCustomSensitivity}>
+      <Field label="Select alert sensitivity" data-fs-element="Alert sensitivity select">
         <Controller
+          control={control}
           name="alertSensitivity"
-          render={({ field }) => (
-            <Select
-              {...field}
-              width={40}
-              disabled={isCustomSensitivity}
-              data-testid="alertSensitivityInput"
-              options={isCustomSensitivity ? [alertSensitivity] : ALERT_SENSITIVITY_OPTIONS}
-            />
-          )}
+          render={({ field }) => {
+            const { ref, ...rest } = field;
+            return (
+              <Select
+                {...rest}
+                aria-label="Select alert sensitivity"
+                width={40}
+                disabled={isFormDisabled || isCustomSensitivity}
+                data-testid="alertSensitivityInput"
+                options={
+                  isCustomSensitivity
+                    ? [{ label: alertSensitivity, value: alertSensitivity }]
+                    : ALERT_SENSITIVITY_OPTIONS
+                }
+                onChange={(e) => {
+                  field.onChange(e.value);
+                }}
+              />
+            );
+          }}
         />
       </Field>
-    </Collapse>
+    </>
   );
+};
+
+const getStyles = (theme: GrafanaTheme2) => {
+  const headingDisplay = `h4`;
+
+  return {
+    marginBottom: css({
+      marginBottom: theme.spacing(2),
+    }),
+    link: css({
+      textDecoration: `underline`,
+    }),
+    title: css({
+      fontSize: theme.typography[headingDisplay].fontSize,
+      fontWeight: theme.typography[headingDisplay].fontWeight,
+      lineHeight: theme.typography[headingDisplay].lineHeight,
+    }),
+  };
 };

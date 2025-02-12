@@ -1,11 +1,13 @@
-import React, { useReducer, useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Label, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { Field, Label, Button } from '@grafana/ui';
-import QueryParamInput, { QueryParam } from './QueryParamInput';
+
+import { HttpCheckCacheBuster } from './CheckEditor/FormComponents/HttpCheckCacheBuster';
+import { QueryParam, QueryParamInput } from './QueryParamInput';
 
 interface Props {
   target: URL;
-  className?: string;
   onChange: (target: string) => void;
   onBlur?: () => void;
 }
@@ -23,7 +25,7 @@ function init(target: URL) {
     .replace('?', '')
     .split('&')
     .map((queryParam) => {
-      const [name, value] = queryParam.split('=');
+      const [name, value = ''] = queryParam.split('=');
       return { name, value };
     });
   return formatted;
@@ -58,7 +60,8 @@ function queryParamReducer(state: QueryParam[], action: Action) {
   }
 }
 
-const QueryParams = ({ target, onChange, className, onBlur }: Props) => {
+export const QueryParams = ({ target, onChange, onBlur }: Props) => {
+  const styles = useStyles2(getStyles);
   const [formattedParams, dispatch] = useReducer(queryParamReducer, target, init);
   const [shouldUpdate, setShouldUpdate] = useState(false);
 
@@ -86,38 +89,40 @@ const QueryParams = ({ target, onChange, className, onBlur }: Props) => {
   };
 
   return (
-    <div className={className}>
-      <Field label="Query params" description="Query params for the target URL">
-        <div
-          className={css`
-            display: grid;
-            grid-template-columns: auto auto auto;
-            grid-gap: 0.25rem;
-            align-items: center;
-          `}
-        >
-          <Label>Key</Label>
-          <Label>Value</Label>
-          <div />
-          {formattedParams.map((queryParam, index) => (
-            <QueryParamInput
-              queryParam={queryParam}
-              onBlur={onBlur}
-              key={index}
-              onDelete={handleDelete(index)}
-              onChange={(updatedParam) => {
-                dispatch({ type: 'change', queryParam: updatedParam, index: index });
-                setShouldUpdate(true);
-              }}
-            />
-          ))}
-        </div>
-      </Field>
-      <Button type="button" variant="secondary" size="sm" onClick={() => dispatch({ type: 'add' })}>
-        Add query param
-      </Button>
-    </div>
+    <Stack direction={`column`} gap={2}>
+      <div className={styles.grid}>
+        <Label>Key</Label>
+        <Label>Value</Label>
+        <div />
+        {formattedParams.map((queryParam, index) => (
+          <QueryParamInput
+            index={index}
+            queryParam={queryParam}
+            onBlur={onBlur}
+            key={index}
+            onDelete={handleDelete(index)}
+            onChange={(updatedParam) => {
+              dispatch({ type: 'change', queryParam: updatedParam, index: index });
+              setShouldUpdate(true);
+            }}
+          />
+        ))}
+      </div>
+      <div>
+        <Button type="button" variant="secondary" size="sm" onClick={() => dispatch({ type: 'add' })}>
+          Add query param
+        </Button>
+      </div>
+      <HttpCheckCacheBuster />
+    </Stack>
   );
 };
 
-export default QueryParams;
+const getStyles = (theme: GrafanaTheme2) => ({
+  grid: css({
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr auto',
+    gridGap: theme.spacing(1, 2),
+    alignItems: 'center',
+  }),
+});
